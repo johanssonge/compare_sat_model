@@ -5,13 +5,14 @@ Created on 29 Aug 2018
 '''
 from optparse import OptionParser
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # @UnresolvedImport
 import warnings
 import pdb
 import os
+import sys
 from calcSat import all_months_comb
-from scipy.stats import ttest_ind, mannwhitneyu
-from matplotlib.patches import Ellipse, Rectangle
+from scipy.stats import ttest_ind, mannwhitneyu  # @UnresolvedImport
+from matplotlib.patches import Ellipse, Rectangle  # @UnresolvedImport
 
 
 def getLonLatMask(ll, llmin, llmax):
@@ -39,13 +40,13 @@ def calculateLeapingMean2D(data_list,nr):
     size=data_list.shape[1]
     retv=np.zeros(data_list.shape)
     for i in range(nrstep):        
-        retv[:, i] = np.nanmean(data_list[:, 0:(i+nrstep+1)], axis=1)  # @UndefinedVariable
+        retv[:, i] = np.nanmean(data_list[:, 0:(i+nrstep+1)], axis=1)
     for ii in range(size-(2*nrstep)):
         j=ii+nrstep
-        retv[:, j] = np.nanmean(data_list[:, (j-nrstep):(j+nrstep+1)], axis=1)  # @UndefinedVariable
+        retv[:, j] = np.nanmean(data_list[:, (j-nrstep):(j+nrstep+1)], axis=1)
     for iii in range(nrstep):
         jj=size-(nrstep-iii)
-        retv[:, jj]= np.nanmean(data_list[:, (jj-nrstep):], axis=1)  # @UndefinedVariable
+        retv[:, jj]= np.nanmean(data_list[:, (jj-nrstep):], axis=1)
     return retv
 
 
@@ -68,7 +69,7 @@ def calculateVertMean(e_res, e_res_stat, namn, i, p, lat, lon, use_datline_cente
         #: Nino4
         latmask = getLonLatMask(lat, -5, 5)
         lonmask = getLonLatMask(lon, lonmin['nino4'], lonmax['nino4'])
-    mean_vert = np.nanmean(e_res_stat[namn][:, latmask, :][:, :, lonmask], axis=(1, 2))  # @UndefinedVariable
+    mean_vert = np.nanmean(e_res_stat[namn][:, latmask, :][:, :, lonmask], axis=(1, 2))
     try:        
         if (p == 0) and(e_res[namn + '_vert'].ndim == 2):
             e_res[namn + '_vert'][:, i] = mean_vert
@@ -94,7 +95,7 @@ def calculateLonMean(e_res, e_res_stat, namn, i, p, lat):
     elif p == 5:
         latmask = getLonLatMask(lat, -15, 15)
 
-    mean_lon = np.nanmean(e_res_stat[namn][:, latmask, :], axis=1)  # @UndefinedVariable
+    mean_lon = np.nanmean(e_res_stat[namn][:, latmask, :], axis=1)
     if (p == 0) and(e_res[namn + '_lon'].ndim == 3):
         e_res[namn + '_lon'][:, :, i] = mean_lon
     else:
@@ -103,9 +104,22 @@ def calculateLonMean(e_res, e_res_stat, namn, i, p, lat):
 
 
 def getCbColour():
+    from matplotlib import  colors
+    from pylab import cm
+    cmap = cm.get_cmap('Set1')
+    colors.rgb2hex(cmap(0))
+#     pdb.set_trace()
+#     pdb.set_trace()
+    colour_sat = colors.rgb2hex(cmap(0))
+    colour_hre = colors.rgb2hex(cmap(1))
+    colour_lre = colors.rgb2hex(cmap(2))
+    colour_lr6 = colors.rgb2hex(cmap(3))
+    
+    
     CB_color_cycle = {'blue': '#377eb8', 'orange': '#ff7f00', 'green': '#4daf4a',
                       'pink': '#f781bf', 'brown': '#a65628', 'lila': '#984ea3',
                       'grey': '#999999', 'red': '#e41a1c', 'gul': '#dede00'}
+     
     colour_sat = CB_color_cycle['lila']
     colour_hre = CB_color_cycle['brown']
     colour_lre = CB_color_cycle['blue']
@@ -149,7 +163,7 @@ def plotLonTOA(rhd, valminmax, figname_st, useClim=False, use_datline_center=Fal
 #             endLat = stepL + step
 #             stepInd = (stLat[datan] >= stepL) & (stLat[datan] < endLat)
         warnings.simplefilter("ignore", category=RuntimeWarning)
-        rhdLat = np.nanmean(rhd[datan], axis=0)  # @UndefinedVariable
+        rhdLat = np.nanmean(rhd[datan], axis=0)
         warnings.resetwarnings()
         aspect = float('%.2f' %(0.25 / (rhdLat.shape[0] / (rhdLat.shape[1] * 1.))))
         ax = fig.add_subplot(111)
@@ -216,7 +230,7 @@ def plotLonStep(rhd, step, stLat, valminmax, figname_st, useClim=False, use_datl
             endLat = stepL + step
             stepInd = getLonLatMask(stLat[datan], stepL, endLat)
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            rhdLat = np.nanmean(rhd[datan][:,stepInd,:], axis=1)  # @UndefinedVariable
+            rhdLat = np.nanmean(rhd[datan][:,stepInd,:], axis=1)
             if datan == 'sat':
                 rhdLat = rhdLat[0:86, :]
             warnings.resetwarnings()
@@ -255,7 +269,7 @@ def plotLonStep(rhd, step, stLat, valminmax, figname_st, useClim=False, use_datl
                 else:
                     cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
                 cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)  # @UnusedVariable
-                cbar.set_label('CRH [K/day]')
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]')
             else:
                 ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
             if f == 1:
@@ -288,8 +302,8 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
     
     step = 30
     latmin = -15
-    num_fig = 3
-    figsize = (8,7)
+    num_fig = 2
+    figsize = (8,6)
     k = 0
     for datan in lats.keys():#['sat', 'lre', 'hre']:
         #: 'e_' is used for statistic calculation
@@ -304,7 +318,7 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
             latmax = latmin + step
             latmask = getLonLatMask(lats[datan], latmin, latmax)
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            rhdLat = np.nanmean(rhd['%s_%s' %(mon, datan)]['crh'][:, latmask, :], axis = 1)  # @UndefinedVariable
+            rhdLat = np.nanmean(rhd['%s_%s' %(mon, datan)]['crh'][:, latmask, :], axis = 1)
             if datan == 'sat':
                 rhdLat = rhdLat[0:86, :]
             warnings.resetwarnings()
@@ -317,11 +331,11 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
 #                 ax2 = ax.twiny()
             xticks, yticks = getLonTicks(datan)
             ax.set_yticks(yticks)
-            ax.set_yticklabels(['0', '5', '10', '15', '20'])
+            ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
+            ax.set_ylabel('Height [km]', fontsize='x-large')
             ax.set_xticks(xticks)
-            ax.set_ylabel('Height [km]')
             if datan != 'hre':
-                ax.text(1.03, 0.5, '%s' %mon.upper(), ha='center', va='center',rotation=90,transform=ax.transAxes)
+                ax.text(1.03, 0.5, '%s' %mon.upper(), ha='center', va='center',rotation=90,transform=ax.transAxes, fontsize='x-large')
 #                 ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
 # #                 ax.yaxis.set_label_position("right")
 #                 ax2.set_ylabel(mon.upper())
@@ -329,29 +343,31 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
 #                 ax2.set_xticklabels(['', '', '', '', '', ''])
 #                 ax2.set_yticklabels(['', '', '', '', ''])
 #             ax.set_title('Latitude, %i - %i' %(stepL, endLat))
-            ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+            ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
             if f == 2:
                 if use_datline_center:
-                    ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'])
+                    ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'], fontsize='large')
                 else:
-                    ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'])
-                ax.set_xlabel('Longitude [deg]')
+                    ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'], fontsize='large')
+                ax.set_xlabel('Longitude [deg]', fontsize='x-large')
                 barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
                 if num_fig == 1:
                     cbar_ax = fig.add_axes([0.2, 0.33, 0.6, 0.01])
                 else:
-                    cbar_ax = fig.add_axes([0.2, 0.28, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
+                    cbar_ax = fig.add_axes([0.2, 0.09, 0.6, 0.02])
+#                     cbar_ax = fig.add_axes([0.2, 0.28, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
                 cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)  # @UnusedVariable
-                cbar.set_label('CRH [K/day]')
+                cbar.ax.tick_params(labelsize='large')
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
             else:
                 ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
             if f == 1:
                 if use_datline_center:
-                    ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                    ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                    ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
+                    ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
 
-        
+        fig.tight_layout(rect=[0, 0.1, 1, 0.9])
         figname = figname_st[datan].replace('ensoN', 'enso').replace('ensoP', 'enso') + '_lon'
         if not use_datline_center:
             figname = os.path.dirname(figname) + '/map_' + os.path.basename(figname)
@@ -361,7 +377,7 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
             figname = figname + '_anom'
         fig.savefig(figname + '.png')
         fig.show()
-    pdb.set_trace()
+        pdb.set_trace()
 
 
 def plotLonSeason_diff_forPresentation(rhd, stLat, valminmax, figname_se, top_rad, bot_rad, useClim=False, use_datline_center=False, extraLon = None):
@@ -376,8 +392,8 @@ def plotLonSeason_diff_forPresentation(rhd, stLat, valminmax, figname_se, top_ra
             tr_stepInd = (stLat[top_rad] >= -30) & (stLat[top_rad] <= 30)
             br_stepInd = (stLat[bot_rad] >= -30) & (stLat[bot_rad] <= 30)
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            tr_rhdLat = np.nanmean(rhd['%s_%s' %(mon, top_rad)]['crh'][:,tr_stepInd,:], axis=1)  # @UndefinedVariable
-            br_rhdLat = np.nanmean(rhd['%s_%s' %(mon, bot_rad)]['crh'][:,br_stepInd,:], axis=1)  # @UndefinedVariable
+            tr_rhdLat = np.nanmean(rhd['%s_%s' %(mon, top_rad)]['crh'][:,tr_stepInd,:], axis=1)
+            br_rhdLat = np.nanmean(rhd['%s_%s' %(mon, bot_rad)]['crh'][:,br_stepInd,:], axis=1)
             
             
             rhdLat = calculateLonDiff(tr_rhdLat, br_rhdLat, extraLon)
@@ -436,7 +452,7 @@ def plotLonSeason_diff_forPresentation(rhd, stLat, valminmax, figname_se, top_ra
                 barticks = [valminmax*-1, valminmax*-0.75, valminmax*-0.5, valminmax*-0.25, 0, valminmax*0.25, valminmax*0.5, valminmax*0.75, valminmax]
                 cbar_ax = fig.add_axes([0.2, 0.4, 0.6, 0.03])#[0.2, 0.04, 0.6, 0.01])
                 cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax)#, ticks=barticks)  # @UnusedVariable
-                cbar.set_label('CRH [K/day]', fontsize='x-large')
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
             else:
                 ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
             if f == 1:
@@ -484,7 +500,7 @@ def plotLonSeason_forPresentation(rhd, stLat, valminmax, figname_se, useClim=Fal
             data_read = '%s_%s' %(mon, datan)
             f = f + 1
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            rhdLat = np.nanmean(rhd[data_read]['crh'][:, stepInd, :], axis=1)  # @UndefinedVariable
+            rhdLat = np.nanmean(rhd[data_read]['crh'][:, stepInd, :], axis=1)
             if datan == 'sat':
                 rhdLat = rhdLat[0:86, :]
             warnings.resetwarnings()
@@ -572,7 +588,7 @@ def plotLonSeason_forPresentation(rhd, stLat, valminmax, figname_se, useClim=Fal
                 barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
                 cbar_ax = fig.add_axes([0.2, 0.25, 0.6, 0.02])#[0.2, 0.04, 0.6, 0.01])
                 cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)#, fontsize='large')  # @UnusedVariable
-                cbar.set_label('CRH [K/day]', fontsize='x-large')
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
             else:
                 ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
             if f == 1:
@@ -594,52 +610,72 @@ def plotLonSeason_forPresentation(rhd, stLat, valminmax, figname_se, useClim=Fal
     pdb.set_trace()
 
     
-def plotLonSeason(rhd, stLat, valminmax, figname_se, useClim=False, use_datline_center=False):
+def plotLonSeason(rhd, stLat, valminmax, figname_se, useClim=False, use_datline_center=False, diff_val = None):
 #     xticks = {'sat': [1, 45, 90, 135, 180, 225, 270, 315, 358], 'hre': [1, 128, 256, 384, 512, 640, 768, 896, 1023],'lre': [1, 64, 128, 192, 256, 320, 384, 448, 511],'lr6': [1, 64, 128, 192, 256, 320, 384, 448, 511]}
 #     yticks = {'sat': [1, 21, 42, 63, 83], 'hre': [1, 10, 20, 31, 41],'lre': [1, 10, 20, 31, 41],'lr6': [1, 10, 20, 31, 41]}
-    figsize = (8,10)
-    num_fig = 4
+    if diff_val is None:
+        figsize = (8,11)
+        num_fig = 4
+    else:
+        figsize = (16,10)
+        num_fig = 4
     for datan in stLat.keys():#['lre', 'sat', 'hre']:
         fig = plt.figure(figsize=figsize)
+        fig2 = plt.figure()
         f = 0
         stepInd = (stLat[datan] <= 30) & (stLat[datan] >= -30)
         for mon in 'djf', 'mam', 'jja', 'son':
             data_read = '%s_%s' %(mon, datan)
             f = f + 1
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            rhdLat = np.nanmean(rhd[data_read]['crh'][:, stepInd, :], axis=1)  # @UndefinedVariable
+            rhdLat = np.nanmean(rhd[data_read]['crh'][:, stepInd, :], axis=1)
             if datan == 'sat':
                 rhdLat = rhdLat[0:86, :]
             warnings.resetwarnings()
             aspect = float('%.2f' %(0.25 / (rhdLat.shape[0] / (rhdLat.shape[1] * 1.))))
-            ax = fig.add_subplot(num_fig,1,f)
+            if diff_val is None:
+                ax = fig.add_subplot(num_fig,1,f)
+                ax2 = fig2.add_subplot(1,1,1) #Dummy
+                im2 = ax2.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax[datan] * -1, vmax=valminmax[datan])
+            else:
+                ax = fig.add_subplot(num_fig,2,f)
+                ax2 = fig.add_subplot(num_fig,f*2-1,f*2)
+                pdb.set_trace()
+                im2 = ax2.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax[datan] * -1, vmax=valminmax[datan])
+                
             im = ax.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax[datan] * -1, vmax=valminmax[datan])
             xticks, yticks = getLonTicks(datan)
             ax.set_yticks(yticks)
-            ax.set_yticklabels(['0', '5', '10', '15', '20'])
+            ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
     
             ax.set_xticks(xticks)
-            ax.set_ylabel('Height [km]')
-            ax.set_title(mon.upper())
-            ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+            ax.set_ylabel('Height [km]', fontsize='x-large')
+            ax.set_title(mon.upper(), fontsize='xx-large')
+            ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
             if f == num_fig:
                 if use_datline_center:
-                    ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'])
+                    ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'], fontsize='large')
                 else:
-                    ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'])
-                ax.set_xlabel('Longitude [deg]')
-                barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
-                cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
+                    ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'], fontsize='large')
+                ax.set_xlabel('Longitude [deg]', fontsize='x-large')
+#                 barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
+                barticks = [-1.5, -1, -0.5, 0, 0.5, 1, 1.5]
+                cbar_ax = fig.add_axes([0.2, 0.06, 0.6, 0.01])#[0.2, 0.05, 0.6, 0.01])
                 cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)  # @UnusedVariable
-                cbar.set_label('CRH [K/day]')
+                cbar.ax.tick_params(labelsize='large')
+#                 for t in cbar.ax.get_yticks():
+#                     t.set_fontsize('large')
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
             else:
                 ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
             if f == 1:
                 if use_datline_center:
-                    ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                    ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                    ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-        plt.subplots_adjust(hspace=0.0001)
+                    ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+#         fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+        fig.tight_layout(rect=[0, 0.07, 1, 0.95])
+#         plt.subplots_adjust(hspace=0.0001)
         figname = figname_se[datan] + '_lon'
         if not use_datline_center:
             figname = os.path.dirname(figname) + '/map_' + os.path.basename(figname)
@@ -647,8 +683,180 @@ def plotLonSeason(rhd, stLat, valminmax, figname_se, useClim=False, use_datline_
             figname = figname + '_anom'
         fig.savefig(figname + '.png')
         fig.show()
-    pdb.set_trace()
+        pdb.set_trace()
+    
+    
+def plotLonAll(rhd, stLat, valminmax, figname_se, useClim=False, use_datline_center=False):
+    #: Same as plotLonSeason but for yearly
+#     xticks = {'sat': [1, 45, 90, 135, 180, 225, 270, 315, 358], 'hre': [1, 128, 256, 384, 512, 640, 768, 896, 1023],'lre': [1, 64, 128, 192, 256, 320, 384, 448, 511],'lr6': [1, 64, 128, 192, 256, 320, 384, 448, 511]}
+#     yticks = {'sat': [1, 21, 42, 63, 83], 'hre': [1, 10, 20, 31, 41],'lre': [1, 10, 20, 31, 41],'lr6': [1, 10, 20, 31, 41]}
+    label_dict={'sat': 'SAT', 'hre': 'E3PH', 'lre': 'E3P', 'lr6': 'E3'}
 
+    figsize = (16,6)#(24,6)
+    fig = plt.figure(figsize=figsize)
+#     fig = plt.figure()
+    num_fig = 4#12
+    f = 0
+    for datan in ['sat', 'hre']:# 'lre', 'lr6']:#stLat.keys():#['lre', 'sat', 'hre']:
+#         fig2 = plt.figure()
+        stepInd = (stLat[datan] <= 30) & (stLat[datan] >= -30)
+        mon = 'all'
+        for swlw in ['lw', 'sw']:#['net', 'lw', 'sw']:
+            f = f + 1
+            ax = fig.add_subplot(int(num_fig/2) ,2 ,f)
+            if swlw == 'net':
+                use_swlw = 'crh'
+            else:
+                use_swlw = swlw
+
+            data_read = '%s_%s' %(mon, datan)
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            rhdLat = np.nanmean(rhd[data_read][use_swlw][:, stepInd, :], axis=1)
+            if datan == 'sat':
+                rhdLat = rhdLat[0:86, :]
+            
+            warnings.resetwarnings()
+            aspect = float('%.2f' %(0.25 / (rhdLat.shape[0] / (rhdLat.shape[1] * 1.))))
+#             ax = fig.add_subplot(4,3,f)
+#             ax2 = fig2.add_subplot(1,1,1) #Dummy
+#             im2 = ax2.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax[datan] * -1, vmax=valminmax[datan])
+                
+            im = ax.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax[datan] * -1, vmax=valminmax[datan])
+            xticks, yticks = getLonTicks(datan)
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
+    
+            ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
+            if f == num_fig:
+#                 barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
+                barticks = [-1.5, -1, -0.5, 0, 0.5, 1, 1.5]
+                cbar_ax = fig.add_axes([0.2, 0.09, 0.6, 0.02])#[0.2, 0.04, 0.6, 0.01])
+                cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)  # @UnusedVariable
+                cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
+                cbar.ax.tick_params(labelsize='large')
+            
+            
+            if f in [3, 4]:#[10, 11, 12]:
+                if use_datline_center:
+                    ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'], fontsize='large')
+                else:
+                    ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'], fontsize='large')
+                ax.set_xlabel('Longitude [deg]', fontsize='x-large')
+            else:
+                ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
+            if f in [1, 2]:
+                ax.set_title(swlw.upper(), fontsize='xx-large')
+                if use_datline_center:
+                    ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                    ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+            ax.set_xticks(xticks)
+            if f in [1, 3]:
+                ax.set_ylabel('Height [km]', fontsize='x-large')
+            elif f in [2, 4]:
+                ax.yaxis.set_label_position("right")
+                ax.set_ylabel(label_dict[datan], fontsize='x-large')
+#         plt.subplots_adjust(hspace=0.0001)
+#         fig.tight_layout(rect=[0, 0, 1, 1])
+        fig.tight_layout(rect=[0, 0.1, 1, 0.98])
+        figname = figname_se[datan].replace('LRC6', mon.capitalize()).replace('HRNE', mon.capitalize()).replace('-4', '-all') + '_lon'
+        if not use_datline_center:
+            figname = os.path.dirname(figname) + '/map_' + os.path.basename(figname)
+        if useClim:
+            figname = figname + '_anom'
+        fig.savefig(figname + '.png')
+        fig.show()
+    
+    pdb.set_trace()
+    
+
+def plotVertRHDAll(rhd, height, figname_ver, useClim = False):
+    colour = getCbColour()
+    height_ver_sat = np.asarray(height['sat'][0:86])
+    height_ver_hre = height['hre']
+    height_ver_lre = height['lre']
+    height_ver_lr6 = height['lr6']
+    months = ['all']
+    f = 0
+    if len(months) == 4:
+        fig = plt.figure(figsize = (12,16))
+    elif len(months) == 3:
+        fig = plt.figure(figsize = (12,13))
+    elif len(months) == 1:
+        fig = plt.figure(figsize = (12,5))
+    for mon in months:
+        for swlw in ['net', 'lw', 'sw']:
+            f = f + 1
+            ax = fig.add_subplot(len(months),3,f)
+            if swlw == 'net':
+                use_swlw = 'crh'
+            else:
+                use_swlw = swlw
+            rhd_ver_sat = np.nanmean(rhd['%s_sat' %mon][use_swlw], axis=(1,2))[0:86]
+            rhd_ver_hre = np.nanmean(rhd['%s_hre' %mon][use_swlw], axis=(1,2))
+            rhd_ver_lre = np.nanmean(rhd['%s_lre' %mon][use_swlw], axis=(1,2))
+            rhd_ver_lr6 = np.nanmean(rhd['%s_lr6' %mon][use_swlw], axis=(1,2))
+            
+            height_ver_sat = np.where(height_ver_sat > 20000, 20000, height_ver_sat)
+            height_ver_hre = np.where(height_ver_hre > 20000, 20000, height_ver_hre)
+            height_ver_lre = np.where(height_ver_lre > 20000, 20000, height_ver_lre)
+            height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
+
+            ax.plot(rhd_ver_sat, height_ver_sat, color=colour['sat'], lw=1, label= 'SAT')
+            ax.plot(rhd_ver_hre, height_ver_hre, color=colour['hre'], lw=1, label= 'E3PH')
+            ax.plot(rhd_ver_lre, height_ver_lre, color=colour['lre'], lw=1, label= 'E3P')
+            ax.plot(rhd_ver_lr6, height_ver_lr6, color=colour['lr6'], lw=1, label= 'E3')
+            ax.vlines(0,0,height_ver_sat[-1],color='g', lw=0.5)
+            std_ver_sat = np.nanstd(rhd['e_%s_sat' %mon][use_swlw + '_vert'], axis=1)[0:86]
+            std_ver_hre = np.nanstd(rhd['e_%s_hre' %mon][use_swlw + '_vert'], axis=1)
+            ax.plot((rhd_ver_sat - std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+            ax.plot((rhd_ver_sat + std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+            ax.plot((rhd_ver_hre - std_ver_hre), height_ver_hre, lw=0, color=colour['hre'])
+            ax.plot((rhd_ver_hre + std_ver_hre), height_ver_hre, lw=0, color=colour['hre'])
+            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=0.3)
+            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.3)
+            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre - std_ver_hre, facecolor=colour['hre'], alpha=0.3)
+            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre + std_ver_hre, facecolor=colour['hre'], alpha=0.3)
+            if f in [2, 5, 8, 11]:
+                ax.legend(loc=1,prop={'size': 14})
+            
+            yticks_man = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.]) @UndefinedVariable
+            if f in [1, 4, 7, 10]:
+                ax.set_ylabel('Height [km]', fontsize='x-large')
+                ylabel_man = (yticks_man / 1000).astype('str')#.astype('int').astype('str')
+            else:
+                ylabel_man = np.array(['',  '',  '',  '', '', '', '', '', ''])
+            if f in [1, 2, 3]:
+                ax.set_title(swlw.upper(), fontsize='xx-large')
+            if f in [len(months)*3-2, len(months)*3-1, len(months)*3]:
+                ax.set_xlabel(r'Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
+                xlabel_man = [-0.8, -0.4, 0, 0.4, 0.8, 1.2]
+            else:
+                xlabel_man = ['', '', '', '', '', '']
+#             if f in [3, 6, 9, 12]:
+#                 ax.yaxis.set_label_position("right")
+#                 ax.set_ylabel(mon.upper(), fontsize='large')
+            ax.set_yticks(yticks_man)
+            ax.set_yticklabels(ylabel_man, fontsize='large')
+            
+            
+            ax.set_xticks([-0.8, -0.4, 0, 0.4, 0.8, 1.2])
+            ax.set_xticklabels(xlabel_man, fontsize='large')
+            ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
+            
+            ax.set_ylim([0, 20000])
+            ax.set_xlim([-0.8, 1.4])
+#         ax.set_xticks([-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1, 1.2])
+    plt.tight_layout()
+    figname = figname_ver.replace('-4', '-all') + '_vert'
+    if useClim:
+        figname = figname + '_anom'
+    fig.savefig(figname + '.png')
+    fig.show()
+
+    pdb.set_trace()
+    
+        
 def plotVertRHDSeason(rhd, height, figname_ver, useClim = False, months = ['djf', 'mam', 'jja', 'son']):
     colour = getCbColour()
     height_ver_sat = np.asarray(height['sat'][0:86])
@@ -671,10 +879,10 @@ def plotVertRHDSeason(rhd, height, figname_ver, useClim = False, months = ['djf'
             else:
                 use_swlw = swlw
         
-            rhd_ver_sat = np.nanmean(rhd['%s_sat' %mon][use_swlw], axis=(1,2))[0:86]  # @UndefinedVariable
-            rhd_ver_hre = np.nanmean(rhd['%s_hre' %mon][use_swlw], axis=(1,2))  # @UndefinedVariable
-            rhd_ver_lre = np.nanmean(rhd['%s_lre' %mon][use_swlw], axis=(1,2))  # @UndefinedVariable
-            rhd_ver_lr6 = np.nanmean(rhd['%s_lr6' %mon][use_swlw], axis=(1,2))  # @UndefinedVariable
+            rhd_ver_sat = np.nanmean(rhd['%s_sat' %mon][use_swlw], axis=(1,2))[0:86]
+            rhd_ver_hre = np.nanmean(rhd['%s_hre' %mon][use_swlw], axis=(1,2))
+            rhd_ver_lre = np.nanmean(rhd['%s_lre' %mon][use_swlw], axis=(1,2))
+            rhd_ver_lr6 = np.nanmean(rhd['%s_lr6' %mon][use_swlw], axis=(1,2))
             
             height_ver_sat = np.where(height_ver_sat > 20000, 20000, height_ver_sat)
             height_ver_hre = np.where(height_ver_hre > 20000, 20000, height_ver_hre)
@@ -700,7 +908,7 @@ def plotVertRHDSeason(rhd, height, figname_ver, useClim = False, months = ['djf'
             if f in [2, 5, 8, 11]:
                 ax.legend(loc=1,prop={'size': 12})
             
-            yticks_man = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.])
+            yticks_man = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.]) @UndefinedVariable
             if f in [1, 4, 7, 10]:
                 ax.set_ylabel('Height [km]', fontsize='large')
                 ylabel_man = (yticks_man / 1000).astype('str')#.astype('int').astype('str')
@@ -709,7 +917,7 @@ def plotVertRHDSeason(rhd, height, figname_ver, useClim = False, months = ['djf'
             if f in [1, 2, 3]:
                 ax.set_title(swlw.upper(), fontsize='large')
             if f in [len(months)*3-2, len(months)*3-1, len(months)*3]:
-                ax.set_xlabel('Cloud Radiative Heating [K/day]', fontsize='large')
+                ax.set_xlabel(r'Cloud Radiative Heating [K $day^{-1}$]', fontsize='large')
                 xlabel_man = [-0.8, -0.4, 0, 0.4, 0.8, 1.2]
             else:
                 xlabel_man = ['', '', '', '', '', '']
@@ -771,10 +979,10 @@ def plotVertRHDSeason_area(rhd, height, lats, figname_ver, useClim = False, use_
             lonmasklre = getLonLatMask(rhd['%s_lre' %mon]['lon'], lonmin[place], lonmax[place])
             lonmasklr6 = getLonLatMask(rhd['%s_lr6' %mon]['lon'], lonmin[place], lonmax[place])
         
-            rhd_ver_sat = np.nanmean(rhd['%s_sat' %mon][use_swlw][:, latmasksat, :][:, :, lonmasksat], axis=(1,2))[0:86]  # @UndefinedVariable
-            rhd_ver_hre = np.nanmean(rhd['%s_hre' %mon][use_swlw][:, latmaskhre, :][:, :, lonmaskhre], axis=(1,2))  # @UndefinedVariable
-            rhd_ver_lre = np.nanmean(rhd['%s_lre' %mon][use_swlw][:, latmasklre, :][:, :, lonmasklre], axis=(1,2))  # @UndefinedVariable
-            rhd_ver_lr6 = np.nanmean(rhd['%s_lr6' %mon][use_swlw][:, latmasklr6, :][:, :, lonmasklr6], axis=(1,2))  # @UndefinedVariable
+            rhd_ver_sat = np.nanmean(rhd['%s_sat' %mon][use_swlw][:, latmasksat, :][:, :, lonmasksat], axis=(1,2))[0:86]
+            rhd_ver_hre = np.nanmean(rhd['%s_hre' %mon][use_swlw][:, latmaskhre, :][:, :, lonmaskhre], axis=(1,2))
+            rhd_ver_lre = np.nanmean(rhd['%s_lre' %mon][use_swlw][:, latmasklre, :][:, :, lonmasklre], axis=(1,2))
+            rhd_ver_lr6 = np.nanmean(rhd['%s_lr6' %mon][use_swlw][:, latmasklr6, :][:, :, lonmasklr6], axis=(1,2))
             
             height_ver_sat = np.where(height_ver_sat > 20000, 20000, height_ver_sat)
             height_ver_hre = np.where(height_ver_hre > 20000, 20000, height_ver_hre)
@@ -798,7 +1006,7 @@ def plotVertRHDSeason_area(rhd, height, lats, figname_ver, useClim = False, use_
             if f in [1, 2, 3]:
                 ax.set_title(swlw.upper())
             if f in [10, 11, 12]:
-                ax.set_xlabel('Cloud Radiative Heating [K/day]')
+                ax.set_xlabel('Cloud Radiative Heating [K $day^{-1}$]')
                 xlabel_man = [-0.8, -0.4, 0, 0.4, 0.8, 1.2]
             else:
                 xlabel_man = ['', '', '', '', '', '']
@@ -914,7 +1122,7 @@ def plotVertRHD_CF_Season(rhd, height, figname_ver, useClim = False):
             if f in [1, 2, 3, 4]:
                 ax.set_title(swlw.upper())
             if f in [13, 14, 15]:
-                ax.set_xlabel('Cloud Radiative Heating [K/day]')
+                ax.set_xlabel('Cloud Radiative Heating [K $day^{-1}$]')
                 xlabel_man = [-0.8, -0.4, 0, 0.4, 0.8, 1.2]
             elif f in [16]:
                 ax.set_xlabel('Cloud Fraction')
@@ -994,7 +1202,7 @@ def plotWCSeason(wc, height, figname_wc, ticksen, useClim = False):
                 ylabel = [''] * len(yticks)
             
             if f in [7, 8]:
-                ax.set_xlabel('%s [g / m3]' %wcil.upper())
+                ax.set_xlabel('%s [g $m^{-3}$]' %wcil.upper())
                 xlabel = xticks.astype('str')
             else:
                 xlabel = [''] * len(xticks)
@@ -1015,7 +1223,132 @@ def plotWCSeason(wc, height, figname_wc, ticksen, useClim = False):
     pdb.set_trace()
 
 
-def plotWC_CF_Season(wc, height, figname_wc, ticksen, useClim = False, months = ['djf', 'mam', 'jja', 'son']):
+def plotWC_CF_All(wc, height, figname_wc, ticksen, useClim = False, up=False):
+    months = ['all']
+    colour = getCbColour()
+    height_ver_sat = np.asarray(height['sat'][0:86])
+    height_ver_hre = height['hre']
+    height_ver_lre = height['lre']
+    height_ver_lr6 = height['lr6']
+    if len(months) == 4:
+        fig = plt.figure(figsize = (12,16.5))
+    elif len(months) == 3:
+        fig = plt.figure(figsize = (12,13))
+    elif len(months) == 1:
+        fig = plt.figure(figsize = (12,5))
+    f = 0
+    for mon in months:
+        for wcil in ['iwc', 'lwc', 'cfd']:
+            f = f + 1
+            ax = fig.add_subplot(len(months),3,f)
+            if ('wc90' in figname_wc) and (wcil != 'cfd'):
+                wcil_sat = '90_%s' %wcil
+            else:
+                wcil_sat = wcil
+            
+            if wcil == 'cfd':
+                sat_div = 1
+                wcil_mod = wcil
+            else:
+                sat_div = 1000.
+                if 'Norm' in figname_wc:
+                    wcil_mod = 'c' + wcil
+                else:
+                    wcil_mod = wcil
+            if up:
+                wc_sat_ver_up = np.nanmean(wc['%s_sat_up' %mon][wcil_sat], axis=(1,2))[0:86] / sat_div  # @UndefinedVariable
+            wc_sat_ver = np.nanmean(wc['%s_sat' %mon][wcil_sat], axis=(1,2))[0:86] / sat_div  # @UndefinedVariable
+            wc_hre_ver = np.nanmean(wc['%s_hre' %mon][wcil_mod], axis=(1,2))  # @UndefinedVariable
+            wc_lre_ver = np.nanmean(wc['%s_lre' %mon][wcil_mod], axis=(1,2))  # @UndefinedVariable
+            wc_lr6_ver = np.nanmean(wc['%s_lr6' %mon][wcil_mod], axis=(1,2))  # @UndefinedVariable
+            
+            if 'Norm' in figname_wc:
+                h0ind = height_ver_hre > 17100
+                wc_hre_ver[h0ind] = 0
+                wc_lre_ver[h0ind] = 0
+                wc_lr6_ver[h0ind] = 0    
+                            
+            height_ver_sat = np.where(height_ver_sat > 20000, 20000, height_ver_sat)
+            height_ver_hre = np.where(height_ver_hre > 20000, 20000, height_ver_hre)
+            height_ver_lre = np.where(height_ver_lre > 20000, 20000, height_ver_lre)
+            height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
+            if up:             
+                ax.plot(wc_sat_ver_up, height_ver_sat, colour['sat'], lw=2, ls='--', label='SAT-WP')
+            ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=2, label='SAT')
+            ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=2, label='E3PH')
+            ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
+            ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
+            
+            mod = 'hre'
+            wc_mod_ver = wc_lr6_ver
+            height_ver_mod = height_ver_lr6
+            std_ver_sat = np.nanstd(wc['e_%s_sat' %mon][wcil_sat + '_vert'] / sat_div, axis=1)[0:86]
+            std_ver_mod = np.nanstd(wc['e_%s_%s' %(mon, mod)][wcil_mod + '_vert'], axis=1)
+            #: Cant be less than 0
+            min_std_sat = wc_sat_ver - std_ver_sat
+            min_std_sat = np.where(min_std_sat<0, 0, min_std_sat)
+            min_std_mod = wc_mod_ver - std_ver_mod
+            min_std_mod = np.where(min_std_mod<0, 0, min_std_mod)
+            ax.plot(min_std_sat, height_ver_sat, color=colour['sat'])
+            ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, color=colour['sat'])
+            ax.plot(min_std_mod, height_ver_mod, color=colour[mod])
+            ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, color=colour[mod])
+            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.5)
+            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.5)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.5)
+            
+#             ax.plot((wc_sat_ver - wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
+#             ax.plot((wc_sat_ver + wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
+#             ax.fill_betweenx(height, clttmean[height], clttmax[height], facecolor=colour_face, alpha=0.5)
+#             ax.fill_betweenx(height, clttmean[height], clttmin[height], facecolor=colour_face, alpha=0.5)
+#             pdb.set_trace()
+#             if f in [3, 6, 9, 12]:
+            if f in [2, 5, 8, 11]:
+                ax.legend(loc=1,prop={'size': 14})
+#             else:
+#                 ax.legend(loc=1,prop={'size': 10})
+    #         ax.set_title('WC')
+            yticks = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.])
+            xticks = ticksen[wcil]
+            if f in [1, 4, 7, 10]:
+                ax.set_ylabel('Height [km]', fontsize='x-large')
+                ylabel = (yticks / 1000).astype('str')#.astype('int').astype('str')
+            else:
+                ylabel = [''] * len(yticks)
+            
+            if f in [len(months) * 3-2, len(months) * 3-1, len(months) * 3]:
+                if f == (len(months) * 3):
+                    ax.set_xlabel('Cloud Fraction', fontsize='x-large')
+                else:
+                    ax.set_xlabel(r'%s [g $m^{-3}$]' %wcil.upper(), fontsize='x-large')
+                xlabel = xticks.astype('str')
+            else:
+                xlabel = [''] * len(xticks)
+#             if f in [3, 6, 9, 12]:
+#                 ax.yaxis.set_label_position("right")
+#                 ax.set_ylabel(mon.upper(), fontsize='large')
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(ylabel, fontsize='large')
+            ax.set_ylim(bottom=0, top=20000)            
+            ax.set_xticks(xticks)
+            ax.set_xticklabels(xlabel, fontsize='large')
+            ax.set_xlim(left=xticks[0], right=xticks[-1])
+            ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
+    plt.tight_layout()
+    figname = figname_wc.replace('-4', '-all')
+    if useClim:
+        figname = figname + '_anom'
+    if up:
+        figname = figname + '_utanP'
+    fig.show()
+    fig.savefig(figname + '.png')
+    pdb.set_trace()
+
+
+
+
+def plotWC_CF_Season(wc, height, figname_wc, ticksen, useClim = False, months = ['djf', 'mam', 'jja', 'son'], up=False):
     
     colour = getCbColour()
     height_ver_sat = np.asarray(height['sat'][0:86])
@@ -1064,25 +1397,28 @@ def plotWC_CF_Season(wc, height, figname_wc, ticksen, useClim = False, months = 
             height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
                             
             ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=2, label='SAT')
-            ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=2, label='E3PH')
-            ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
+#             ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=2, label='E3PH')
+#             ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
             ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
             
+            mod = 'lr6'
+            wc_mod_ver = wc_lr6_ver
+            height_ver_mod = height_ver_lr6
             std_ver_sat = np.nanstd(wc['e_%s_sat' %mon][wcil_sat + '_vert'] / sat_div, axis=1)[0:86]
-            std_ver_hre = np.nanstd(wc['e_%s_hre' %mon][wcil_mod + '_vert'], axis=1)
+            std_ver_mod = np.nanstd(wc['e_%s_%s' %(mon, mod)][wcil_mod + '_vert'], axis=1)
             #: Cant be less than 0
             min_std_sat = wc_sat_ver - std_ver_sat
             min_std_sat = np.where(min_std_sat<0, 0, min_std_sat)
-            min_std_hre = wc_hre_ver - std_ver_hre
-            min_std_hre = np.where(min_std_hre<0, 0, min_std_hre)
+            min_std_mod = wc_mod_ver - std_ver_mod
+            min_std_mod = np.where(min_std_mod<0, 0, min_std_mod)
             ax.plot(min_std_sat, height_ver_sat, color=colour['sat'])
             ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, color=colour['sat'])
-            ax.plot(min_std_hre, height_ver_hre, color=colour['hre'])
-            ax.plot((wc_hre_ver + std_ver_hre), height_ver_hre, color=colour['hre'])
+            ax.plot(min_std_mod, height_ver_mod, color=colour[mod])
+            ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, color=colour[mod])
             ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.5)
             ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
-            ax.fill_betweenx(height_ver_hre, wc_hre_ver, min_std_hre, facecolor=colour['hre'], alpha=0.5)
-            ax.fill_betweenx(height_ver_hre, wc_hre_ver, wc_hre_ver + std_ver_hre, facecolor=colour['hre'], alpha=0.5)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.5)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.5)
             
 #             ax.plot((wc_sat_ver - wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
 #             ax.plot((wc_sat_ver + wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
@@ -1107,7 +1443,7 @@ def plotWC_CF_Season(wc, height, figname_wc, ticksen, useClim = False, months = 
                 if f == (len(months) * 3):
                     ax.set_xlabel('Cloud Fraction', fontsize='large')
                 else:
-                    ax.set_xlabel('%s [$g / m^3$]' %wcil.upper(), fontsize='large')
+                    ax.set_xlabel(r'%s [g $m^{-3}$]' %wcil.upper(), fontsize='large')
                 xlabel = xticks.astype('str')
             else:
                 xlabel = [''] * len(xticks)
@@ -1116,14 +1452,17 @@ def plotWC_CF_Season(wc, height, figname_wc, ticksen, useClim = False, months = 
                 ax.set_ylabel(mon.upper(), fontsize='large')
             ax.set_yticks(yticks)
             ax.set_yticklabels(ylabel)
-            
+            ax.set_ylim(bottom=0, top=20000)            
             ax.set_xticks(xticks)
             ax.set_xticklabels(xlabel)
+            ax.set_xlim(left=xticks[0], right=xticks[-1])
             ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
     plt.tight_layout()
     figname = figname_wc
     if useClim:
         figname = figname + '_anom'
+    if up:
+        figname = figname + '_utanP'
     fig.show()
     fig.savefig(figname + '.png')
     pdb.set_trace()
@@ -1214,7 +1553,7 @@ def plotWC_CF_Season_area(wc, height, lats, figname_wc, ticksen, useClim = False
                 if f == 12:
                     ax.set_xlabel('Cloud Fraction')
                 else:
-                    ax.set_xlabel('%s [g / m3]' %wcil.upper())
+                    ax.set_xlabel('%s [g $m^{-3}$]' %wcil.upper())
                 xlabel = xticks.astype('str')
             else:
                 xlabel = [''] * len(xticks)
@@ -1294,63 +1633,67 @@ def plotWC_CF_Enso(wc, height, lats, figname_org, ticksen, useClim, use_datline_
                 elif place in ['nino4']:
                     fi = 2
                 
+                mod = 'lr6'
+                wc_mod_ver = wc_lr6_ver
                 std_ver_sat = np.nanstd(wc['e_%s_sat' %mon][wcil_sat + '_vert'][fi,:,:] / sat_div, axis=1)[0:86]  # @UndefinedVariable
-                std_ver_hre = np.nanstd(wc['e_%s_hre' %mon][wcil_mod + '_vert'][fi,:,:], axis=1)  # @UndefinedVariable
+                std_ver_mod = np.nanstd(wc['e_%s_%s' %(mon, mod)][wcil_mod + '_vert'][fi,:,:], axis=1)  # @UndefinedVariable
                 min_std_sat = wc_sat_ver - std_ver_sat
-                min_std_hre = wc_hre_ver - std_ver_hre
+                min_std_mod = wc_mod_ver - std_ver_mod
 #                 min_std_sat = np.where(min_std_sat<0, 0, min_std_sat)
 #                 min_std_hre = np.where(min_std_hre<0, 0, min_std_hre)
                 
                 
                 height_ver_sat = np.where(height_ver_sat >= 20000, 20000, height_ver_sat)
-                height_ver_hre = np.where(height_ver_hre >= 20000, 20000, height_ver_hre)
-                height_ver_lre = np.where(height_ver_lre >= 20000, 20000, height_ver_lre)
+#                 height_ver_hre = np.where(height_ver_hre >= 20000, 20000, height_ver_hre)
+#                 height_ver_lre = np.where(height_ver_lre >= 20000, 20000, height_ver_lre)
                 height_ver_lr6 = np.where(height_ver_lr6 >= 20000, 20000, height_ver_lr6)
-                            
+                height_ver_mod = height_ver_lr6
+                
+                
                 ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=2, label='SAT')
                 ax.plot(min_std_sat, height_ver_sat, color=colour['sat'])
                 ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, color=colour['sat'])
                 ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.5)
                 ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
+                
+                ax.plot(wc_mod_ver, height_ver_mod, colour[mod], lw=2, label='E3')
+                ax.plot(min_std_mod, height_ver_mod, color=colour[mod])
+                ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, color=colour[mod])
+                ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.5)
+                ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.5)
 
-                ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=2, label='E3PH')
-                ax.plot(min_std_hre, height_ver_hre, color=colour['hre'])
-                ax.plot((wc_hre_ver + std_ver_hre), height_ver_hre, color=colour['hre'])
-                ax.fill_betweenx(height_ver_hre, wc_hre_ver, min_std_hre, facecolor=colour['hre'], alpha=0.5)
-                ax.fill_betweenx(height_ver_hre, wc_hre_ver, wc_hre_ver + std_ver_hre, facecolor=colour['hre'], alpha=0.5)
-
-                ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
-                ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
+#                 ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
+#                 ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
 
                 if useClim:
                     ax.vlines(0,0,height_ver_sat[-1],color='g', lw=0.5)
                 if f in [2, 5, 8, 11]:
-                    ax.legend(loc=1,prop={'size': 12})
+                    ax.legend(loc=1,prop={'size': 14})
                 yticks = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.])
                 xticks = ticksen[wcil + '_' + place]
                 if f in [1, 4, 7, 10]:
-                    ax.set_ylabel('Height [km]', fontsize='large')
+                    ax.set_ylabel('Height [km]', fontsize='x-large')
                     ylabel = (yticks / 1000).astype('str')#.astype('int').astype('str')
                 else:
                     ylabel = [''] * len(yticks)
                 
                 if f in [4, 5, 6]:
                     if f == 6:
-                        ax.set_xlabel('Cloud Fraction', fontsize='large')
+                        ax.set_xlabel('Cloud Fraction', fontsize='x-large')
                     else:
-                        ax.set_xlabel('%s [$g / m^3$]' %wcil.upper(), fontsize='large')
+                        ax.set_xlabel('%s [$g m^{-3}$]' %wcil.upper(), fontsize='x-large')
                     xlabel = xticks.astype('str')
                 else:
                     xlabel = [''] * len(xticks)
                 if f in [3, 6, 9, 12]:
                     ax.yaxis.set_label_position("right")
-                    ax.set_ylabel(mon.upper() + '\n' + place.title(), fontsize='large')
+                    ax.set_ylabel(mon.upper() + '\n' + place.title(), fontsize='x-large')
                 ax.set_yticks(yticks)
-                ax.set_yticklabels(ylabel)
-                
+                ax.set_yticklabels(ylabel, fontsize='large')
+                ax.set_ylim(bottom=0, top=20000)
                 ax.set_xticks(xticks)
-                ax.set_xticklabels(xlabel)
-                ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.set_xticklabels(xlabel, fontsize='large')
+                ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
         plt.tight_layout()
         figname = figname_org + '_%s' %place
         if useClim:
@@ -1364,7 +1707,7 @@ def plotVertRHD_Enso(rhd, height, lats, figname_ver, useClim, use_datline_center
                'lw_nino3': np.array([-1.2, -0.8, -0.4, 0, 0.4, 0.8]), \
                'sw_nino3': np.array([-0.8, -0.4, 0, 0.4, 0.8]), \
                'net_nino4': np.array([-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2, 1.6, 2.0]), \
-               'lw_nino4': np.array([-0.8, -0.4, 0, 0.4, 0.8]), \
+               'lw_nino4': np.array([-0.8, -0.4, 0, 0.3, 0.6, 0.9]), \
                'sw_nino4': np.array([-0.8, -0.4, 0, 0.4, 0.8, 1.2, 1.6])}
     
     colour = getCbColour()
@@ -1412,8 +1755,8 @@ def plotVertRHD_Enso(rhd, height, lats, figname_ver, useClim, use_datline_center
                 height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
 
                 ax.plot(rhd_ver_sat, height_ver_sat, color=colour['sat'], lw=2, label= 'SAT')
-                ax.plot(rhd_ver_hre, height_ver_hre, color=colour['hre'], lw=2, label= 'E3PH')
-                ax.plot(rhd_ver_lre, height_ver_lre, color=colour['lre'], lw=2, label= 'E3P')
+#                 ax.plot(rhd_ver_hre, height_ver_hre, color=colour['hre'], lw=2, label= 'E3PH')
+#                 ax.plot(rhd_ver_lre, height_ver_lre, color=colour['lre'], lw=2, label= 'E3P')
                 ax.plot(rhd_ver_lr6, height_ver_lr6, color=colour['lr6'], lw=2, label= 'E3')
                 ax.vlines(0,0,height_ver_sat[-1],color='g', lw=0.5)
                 
@@ -1422,33 +1765,35 @@ def plotVertRHD_Enso(rhd, height, lats, figname_ver, useClim, use_datline_center
                     fi = 1
                 elif place in ['nino4']:
                     fi = 2
-
+                mod = 'lr6'
+                rhd_ver_mod = rhd_ver_lr6
+                height_ver_mod = height_ver_lr6
                 std_ver_sat = np.nanstd(rhd['e_%s_sat' %mon][use_swlw + '_vert'][fi,:,:], axis=1)[0:86]  # @UndefinedVariable
-                std_ver_hre = np.nanstd(rhd['e_%s_hre' %mon][use_swlw + '_vert'][fi,:,:], axis=1)  # @UndefinedVariable
+                std_ver_mod = np.nanstd(rhd['e_%s_%s' %(mon, mod)][use_swlw + '_vert'][fi,:,:], axis=1)  # @UndefinedVariable
                 
                 ax.plot((rhd_ver_sat - std_ver_sat), height_ver_sat, color=colour['sat'])
                 ax.plot((rhd_ver_sat + std_ver_sat), height_ver_sat, color=colour['sat'])
-                ax.plot((rhd_ver_hre - std_ver_hre), height_ver_hre, color=colour['hre'])
-                ax.plot((rhd_ver_hre + std_ver_hre), height_ver_hre, color=colour['hre'])
+                ax.plot((rhd_ver_mod - std_ver_mod), height_ver_mod, color=colour[mod])
+                ax.plot((rhd_ver_mod + std_ver_mod), height_ver_mod, color=colour[mod])
                 ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
                 ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
-                ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre - std_ver_hre, facecolor=colour['hre'], alpha=0.5)
-                ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre + std_ver_hre, facecolor=colour['hre'], alpha=0.5)
+                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod - std_ver_mod, facecolor=colour[mod], alpha=0.5)
+                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod + std_ver_mod, facecolor=colour[mod], alpha=0.5)
                 
                 if f in [2, 5, 8, 11]:
-                    ax.legend(loc=1,prop={'size': 12})
+                    ax.legend(loc=1,prop={'size': 14})
                 
                 yticks_man = np.array([0.,  2500.,  5000.,  7500., 10000., 12500., 15000.,17500., 20000.])#, 22500.])
                 xticks = ticksen[swlw + '_' + place]
                 if f in [1, 4, 7, 10]:
-                    ax.set_ylabel('Height [km]', fontsize='large')
+                    ax.set_ylabel('Height [km]', fontsize='x-large')
                     ylabel_man = (yticks_man / 1000).astype('str')
                 else:
                     ylabel_man = np.array(['',  '',  '',  '', '', '', '', '', ''])
                 if f in [1, 2, 3]:
-                    ax.set_title(swlw.upper(), fontsize='large')
+                    ax.set_title(swlw.upper(), fontsize='xx-large')
                 if f in [4, 5, 6]:
-                    ax.set_xlabel('Cloud Radiative Heating [K/day]', fontsize='large')
+                    ax.set_xlabel('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
                     xlabel = xticks.astype('str')
 #                     xlabel_man = [-0.8, -0.4, 0, 0.4, 0.8, 1.2]
                 else:
@@ -1456,15 +1801,16 @@ def plotVertRHD_Enso(rhd, height, lats, figname_ver, useClim, use_datline_center
                     xlabel = [''] * len(xticks)
                 if f in [3, 6, 9, 12]:
                     ax.yaxis.set_label_position("right")
-                    ax.set_ylabel(mon.upper() + '\n' + place.title(), fontsize='large')
+                    ax.set_ylabel(mon.upper() + '\n' + place.title(), fontsize='x-large')
                 ax.set_yticks(yticks_man)
-                ax.set_yticklabels(ylabel_man)
-                
+                ax.set_yticklabels(ylabel_man, fontsize='large')
+                ax.set_ylim(bottom=0, top=20000)
                 
 #                 ax.set_xticks([-0.8, -0.4, 0, 0.4, 0.8, 1.2])
                 ax.set_xticks(xticks)
-                ax.set_xticklabels(xlabel)
-                ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.set_xticklabels(xlabel, fontsize='large')
+                ax.set_xlim(left=xticks[0], right=xticks[-1])
+                ax.text(0.02, 0.94, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
             
         plt.tight_layout()
         figname = figname_ver + '_%s' %place
@@ -1497,7 +1843,7 @@ def plotVertRHD(rhd_swlw, height, figname_ver, useClim = False):
         
         ax.legend(loc=1,prop={'size': 10})
         
-        ax.set_xlabel('Cloud Radiative Heating [K/day]')
+        ax.set_xlabel('Cloud Radiative Heating [K $day^{-1}$]')
         if f == 1:
             ax.set_ylabel('Height [km]')
         ax.set_title(swlw.upper())
@@ -1584,7 +1930,7 @@ def plotWC(wc, height, figname_wc, ticksen, useClim = False):
             ax.plot(wc_ver, use_height, colour[datan], label= datan.upper())
 
         ax.legend(loc=1,prop={'size': 10})
-        ax.set_xlabel('%s [g / m3]' %wcil.upper())
+        ax.set_xlabel('%s [g $m^{-3}$]' %wcil.upper())
 #         ax.set_title('WC')
         if f == 1:
             ax.set_ylabel('Height [km]')
@@ -1820,7 +2166,7 @@ def plotLonStep_diff(rhd, step, stLat, valminmax, figname_st, top_rad, bot_rad, 
             else:
                 cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.01])
             cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax)#, ticks=barticks)  # @UnusedVariable
-            cbar.set_label('CRH [K/day]')
+            cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]')
         else:
             ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
         if f == 1:
@@ -1854,8 +2200,8 @@ def plotLonEnso_diff(rhd, lats, valminmax, figname_st, top_rad, bot_rad, useClim
     
     step = 30
     latmin = -15
-    num_fig = 3
-    figsize = (8,7)
+    num_fig = 2
+    figsize = (8,6)
     fig = plt.figure(figsize=figsize)    
     f = 0
     for mon in ['ensoP', 'ensoN']:
@@ -1902,38 +2248,43 @@ def plotLonEnso_diff(rhd, lats, valminmax, figname_st, top_rad, bot_rad, useClim
         ax.contourf(p1<=0.05, 1, origin='lower', hatches=['', '.'], alpha=0)
 
         xticks, yticks = getLonTicks(top_rad, bot_rad, tr_rhdLat, br_rhdLat)
+#         ax.set_xlim(left=0, right=360)
         ax.set_xticks(xticks)
         ax.set_yticks(yticks)
-        ax.set_yticklabels(['0', '5', '10', '15', '20'])
-        ax.set_ylabel('Height [km]')
+        ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
+        ax.set_ylabel('Height [km]', fontsize='x-large')
         
         #: Sat - hre
-        if ('sat' in [top_rad, bot_rad]) and ('hre' in [top_rad, bot_rad]):
+        if ('sat' in [top_rad, bot_rad]):# and ('hre' in [top_rad, bot_rad]):
             start_letter = 99 #: c
         else:
             start_letter = 97 #: a
-        ax.text(0.01, 1.04, chr((f-1) + start_letter), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
-        ax.text(1.03, 0.5, '%s' %mon.upper(), ha='center', va='center',rotation=90,transform=ax.transAxes)
+        ax.text(0.01, 1.04, chr((f-1) + start_letter), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
+        ax.text(1.03, 0.5, '%s' %mon.upper(), ha='center', va='center',rotation=90,transform=ax.transAxes, fontsize='x-large')
         if f == 2:
             if use_datline_center:
-                ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'])
+                ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'], fontsize='large')
             else:
-                ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'])
-            ax.set_xlabel('Longitude [deg]')
-            barticks = [valminmax['lre']*-1, valminmax['lre']*-0.75, valminmax['lre']*-0.5, valminmax['lre']*-0.25, 0, valminmax['lre']*0.25, valminmax['lre']*0.5, valminmax['lre']*0.75, valminmax['lre']]
-            cbar_ax = fig.add_axes([0.2, 0.28, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
-            cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax)#, ticks=barticks)  # @UnusedVariable
-            cbar.set_label('CRH [K/day]')
+                ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'], fontsize='large')
+            ax.set_xlabel('Longitude [deg]', fontsize='x-large')
+            if valminmax['lre'] == 1:
+                barticks = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1]
+            else:
+                barticks = [valminmax['lre']*-1, valminmax['lre']*-0.8, valminmax['lre']*-0.6, valminmax['lre']*-0.4, valminmax['lre']*-0.2, 0, valminmax['lre']*0.2, valminmax['lre']*0.4, valminmax['lre']*0.6, valminmax['lre']*0.8, valminmax['lre']]
+            cbar_ax = fig.add_axes([0.2, 0.09, 0.6, 0.02])
+            cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)  # @UnusedVariable
+            cbar.ax.tick_params(labelsize='large')
+            cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
         else:
             ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
         
         if f == 1:
             if use_datline_center:
-                ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-
-    
+                ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+    fig.tight_layout(rect=[0, 0.1, 1, 0.9])
+#     fig.tight_layout()#rect=[0, 0.03, 1, 0.95])
     figname = figname_st.replace('ensoN', 'enso').replace('ensoP', 'enso') + '_lon'
     figname = figname.replace('yyy', '%s-%s' %(top_rad.upper(), bot_rad.upper()))
     if not use_datline_center:
@@ -1947,10 +2298,11 @@ def plotLonEnso_diff(rhd, lats, valminmax, figname_st, top_rad, bot_rad, useClim
     pdb.set_trace()
 
 
-def plotLonSeason_diff(rhd, stLat, valminmax, figname_se, top_rad, bot_rad, useClim=False, use_datline_center=False, extraLon = None):
-    figsize = (8,10)
+def plotLonSeason_diff(rhd, stLat, valminmax, figname_se, top_rad, bot_rad, useClim=False, use_datline_center=False, extraLon = None, return_data=False):
+    figsize = (8,11)
     num_fig = 4
-    fig = plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)#, constrained_layout=True)
+    ret_val = {}
 #     fig2 = plt.figure(figsize=figsize)
     f = 0
     for mon in ['djf', 'mam', 'jja', 'son']:
@@ -1969,42 +2321,51 @@ def plotLonSeason_diff(rhd, stLat, valminmax, figname_se, top_rad, bot_rad, useC
         im = ax.imshow(rhdLat, origin='lower', cmap='RdBu_r', aspect=aspect, vmin=valminmax * -1, vmax=valminmax)
         trhd_rs, brhd_rs = reshapeRhdLat(rhd['e_%s_%s' %(mon, top_rad)]['crh_lon'], rhd['e_%s_%s' %(mon, bot_rad)]['crh_lon'], extraLon)
         t1, p1 = ttest_ind(trhd_rs, brhd_rs, axis=2)
-        ax.contourf(p1<=0.05, 1, origin='lower', hatches=['', '.'], alpha=0)
+        p1m = (p1<=0.05)
+        ax.contourf(p1m, 1, origin='lower', hatches=['', '.'], alpha=0)
 
         xticks, yticks = getLonTicks(top_rad, bot_rad, tr_rhdLat, br_rhdLat)
         ax.set_xticks(xticks)
         ax.set_yticks(yticks)
-        ax.set_yticklabels(['0', '5', '10', '15', '20'])
-        ax.set_ylabel('Height [km]')
-        ax.set_title(mon.upper())
+        ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
+        ax.set_ylabel('Height [km]', fontsize='x-large')
+        ax.set_title(mon.upper(), fontsize='xx-large')
         if ('sat' in [top_rad, bot_rad]) and ('hre' in [top_rad, bot_rad]):
             start_letter = 101 #: e
         else:
             start_letter = 97 #: a
-        ax.text(0.01, 1.04, chr((f-1) + start_letter), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+        ax.text(0.01, 1.04, chr((f-1) + start_letter), ha='center', va='center', transform = ax.transAxes, fontsize='xx-large')
         
         if f == num_fig:
             if use_datline_center:
-                ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'])
+                ax.set_xticklabels(['0', '45', '90', '135', '180', '225', '270', '315', '360'], fontsize='large')
             else:
-                ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'])
-            ax.set_xlabel('Longitude [deg]')
-            barticks = [valminmax*-1, valminmax*-0.75, valminmax*-0.5, valminmax*-0.25, 0, valminmax*0.25, valminmax*0.5, valminmax*0.75, valminmax]
-            cbar_ax = fig.add_axes([0.2, 0.04, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
-            cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax)#, ticks=barticks)  # @UnusedVariable
-            cbar.set_label('CRH [K/day]')
+                ax.set_xticklabels(['-180', '-135', '-90', '-45', '0', '45', '90', '135', '180'], fontsize='large')
+            ax.set_xlabel('Longitude [deg]', fontsize='x-large')
+            if valminmax == 1.5:
+                barticks = [-1.5, -1, -0.5, 0, 0.5, 1, 1.5]
+            else:
+                barticks = [valminmax*-1, valminmax*-0.8, valminmax*-0.6, valminmax*-0.4, valminmax*-0.2, 0, valminmax*0.2, valminmax*0.4, valminmax*0.6, valminmax*0.8, valminmax]
+            #                 barticks = [valminmax[datan]*-1, valminmax[datan]*-0.75, valminmax[datan]*-0.5, valminmax[datan]*-0.25, 0, valminmax[datan]*0.25, valminmax[datan]*0.5, valminmax[datan]*0.75, valminmax[datan]]
+            cbar_ax = fig.add_axes([0.2, 0.06, 0.6, 0.01])#[0.2, 0.04, 0.6, 0.01])
+            cbar = fig.colorbar(im, orientation='horizontal', cax=cbar_ax, ticks=barticks)#, fontsize='x-large')  # @UnusedVariable
+            cbar.set_label('Cloud Radiative Heating [K $day^{-1}$]', fontsize='x-large')
+            cbar.ax.tick_params(labelsize='large')
         else:
             ax.set_xticklabels(['', '', '', '', '', '', '', '', ''])
         if f == 1:
             if use_datline_center:
-                ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
-                ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes)#, fontsize='x-large')
+                ax.text(0.94, 0.93, 'Atl', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.text(0.6, 0.93, 'Pac', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+                ax.text(0.22, 0.93, 'IO', ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
+        ret_val.update({mon: [rhdLat, aspect, valminmax, p1m]})
 #         plt.annotate('Here it is!',xy=(0.5,0.5),xytext=(0.2,0.2),
 #              arrowprops=dict(arrowstyle='->',lw=1.5))
 #     from matplotlib.patches import FancyArrow
 #     FancyArrow(1,0.2,0, 0.1)
-    plt.subplots_adjust(hspace=0.0001) 
+#     plt.subplots_adjust(hspace=None) 
+#     plt.tight_layout()
+    fig.tight_layout(rect=[0, 0.07, 1, 0.95])
     figname = figname_se + '_lon'
     figname = figname.replace('yyy', '%s-%s' %(top_rad.upper(), bot_rad.upper()))
     if not use_datline_center:
@@ -2015,6 +2376,8 @@ def plotLonSeason_diff(rhd, stLat, valminmax, figname_se, top_rad, bot_rad, useC
     fig.show()
 #     fig2.show()
     pdb.set_trace()
+    if return_data:
+        return ret_val
 
 
 def plotVertRHD_diff(rhd_net, rhd_sw, rhd_lw, height, figname_ver, useClim = False):
@@ -2030,7 +2393,7 @@ def plotVertRHD_diff(rhd_net, rhd_sw, rhd_lw, height, figname_ver, useClim = Fal
     ax.plot(rhd_ver_sw, height_ver, 'r', label= 'SW')
     
     ax.legend(loc=1,prop={'size': 10})
-    ax.set_xlabel('Cloud Radiative Heating [K/day]')
+    ax.set_xlabel('Cloud Radiative Heating [K $day^{-1}$]')
     ax.set_ylabel('Height [km]')
     ax.set_title('High - Low')
 
@@ -2095,7 +2458,7 @@ def plotWC_diff(wc, height, figname_wc, ticksen, useClim = False):
         l = -1
         ax = fig.add_subplot(1,2,f)
         l = l + 1
-        wc_ver = np.nanmean(wc['%s_%s' %('hre', wcil)], axis=(1,2)) - np.nanmean(wc['%s_%s' %('lre', wcil)], axis=(1,2))  # @UndefinedVariable
+        wc_ver = np.nanmean(wc['%s_%s' %('hre', wcil)], axis=(1,2)) - np.nanmean(wc['%s_%s' %('lre', wcil)], axis=(1,2))
         use_height = height['lre']
         if 'Norm' in figname_wc:
             wc_ver = wc_ver[0:32]
@@ -2104,7 +2467,7 @@ def plotWC_diff(wc, height, figname_wc, ticksen, useClim = False):
         
         ax.plot(wc_ver, use_height, 'b')
 
-        ax.set_xlabel('%s [g / m3]' %wcil.upper())
+        ax.set_xlabel('%s [g $m^{-3}$]' %wcil.upper())
 #         ax.set_title('WC')
         if f == 1:
             ax.set_ylabel('Height [km]')
@@ -2210,15 +2573,27 @@ def getSat(obt, rad = 1):
     return ret
 
 
-def loadSat(year_name, season, clt, return_clim=False):
+def loadSat(year_name, season, clt, return_clim=False, up = False):
     sat_filename = 'sat_y-%s_s-%s_clt-%i' %(year_name, season, clt)
+    if up:
+        sat_filename = sat_filename + '_utanP'
+    
     sat_loadname = 'Clim_val/%s' %sat_filename
+    if not os.path.isfile(sat_loadname + '.npy'):
+        
+        print('File missing')
+        
+        pdb.set_trace()
     try:
         sat_val = np.load(sat_loadname + '.npy', encoding='bytes')[0]
         sat_stLat = sat_val[b'stLat']
     except:
-        sat_val = np.load(sat_loadname + '.npy')[0]
-        sat_stLat = sat_val['stLat']
+        try:
+            sat_val = np.load(sat_loadname + '.npy', allow_pickle=True)[0]
+            sat_stLat = sat_val['stLat']
+        except:
+            sat_val = np.load(sat_loadname + '.npy')[0]
+            sat_stLat = sat_val['stLat']
     if return_clim:
         return sat_val
     else:
@@ -2235,13 +2610,19 @@ def loadModel(mod_res, ece_ver, year_name, season, rad_read, return_clim=False):
     try:
         mod_val = np.load(mod_loadname + '.npy', encoding='bytes')[0]
     except:
-        mod_val = np.load(mod_loadname + '.npy')[0]
+        try:
+            mod_val = np.load(mod_loadname + '.npy', allow_pickle=True, encoding='bytes')[0]
+        except:
+            mod_val = np.load(mod_loadname + '.npy')[0]
     #: Needed to get the cf at the same time as rad.
     if rad_read == 1:
         try:
             mod_val_cfd = np.load(mod_loadname.replace('rad-%i' %rad_read, 'rad-4') + '.npy', encoding='bytes')[0]
         except:
-            mod_val_cfd = np.load(mod_loadname.replace('rad-%i' %rad_read, 'rad-4') + '.npy')[0]
+            try:
+                mod_val_cfd = np.load(mod_loadname.replace('rad-%i' %rad_read, 'rad-4') + '.npy', allow_pickle=True, encoding='bytes')[0]
+            except:
+                mod_val_cfd = np.load(mod_loadname.replace('rad-%i' %rad_read, 'rad-4') + '.npy')[0]
     else:
         mod_val_cfd = None
 
@@ -2318,9 +2699,12 @@ if __name__ == '__main__':
     elif options.Month == -6:
         seasons = ['ensoN']
     elif options.Month == -7:
-        seasons = ['djf', 'mam', 'jja', 'son']
+        seasons = ['djf', 'mam', 'jja', 'son']#, 'all']
     elif options.Month == -8:
         seasons = ['ensoP', 'ensoN']
+    elif options.Month == -100:
+        seasons = ['all']
+        year_name = 'all'
 #     useClim = options.Anomalie
     if options.Month in [-5, -6, -8]:
         useClim = True
@@ -2337,13 +2721,15 @@ if __name__ == '__main__':
         rad_read = 4
     else:
         rad_read = rad
-
-
+    if (rad == 4):# and (options.Month == 1):
+        utanP = True
+    else:
+        utanP = False
     
     if useClim:
         #: Sat
 #         sat_loadname = sat_loadname.replace('y-%s' %year_name, 'y-all').replace('s-%s' %season, 's-all')#.replace('clt-%i' %clt, 'clt-9')
-        sat_clim_val = loadSat('all', 'all', clt, return_clim=useClim)
+        sat_clim_val = loadSat('all', 'all', clt, return_clim=useClim, up=utanP)
         sat_clim_res = getSat(sat_clim_val, rad)
         #: HRE
 #                 mod_loadname = mod_loadname.replace('y-%s' %year_name, 'y-all').replace('s-%s' %season, 's-all')
@@ -2357,7 +2743,9 @@ if __name__ == '__main__':
         lr6_clim_res = getEceart(lr6_clim_val, rad, l6atind, obt_cf=lr6_clim_val_cfd)
     for season in seasons:
         #: Sat
-        sat_val, sat_stLat, sat_filename = loadSat(year_name, season, clt)
+        sat_val_up, sat_stLat_up, sat_filename_up = loadSat(year_name, season, clt, up=True)
+        sat_res_up = getSat(sat_val_up, rad)
+        sat_val, sat_stLat, sat_filename = loadSat(year_name, season, clt, up=False)
         sat_res = getSat(sat_val, rad)
         #: HRE
         hre_val, hre_stLat, hre_filename, hlatind, hre_val_cfd = loadModel('HR', ece_ver, year_name, season, rad_read)
@@ -2400,15 +2788,18 @@ if __name__ == '__main__':
         
         if use_datline_center:
             sat_res = changeTo360(sat_res, sat_ind360)
+            sat_res_up = changeTo360(sat_res_up, sat_ind360)
             hre_res = changeTo360(hre_res, hre_ind360)
             lre_res = changeTo360(lre_res, lre_ind360)
             lr6_res = changeTo360(lr6_res, lr6_ind360)
             sat_res.update({'lon': sat_lon360[sat_ind360]})
+            sat_res_up.update({'lon': sat_lon360[sat_ind360]})
             hre_res.update({'lon': hre_lon360[hre_ind360]})
             lre_res.update({'lon': lre_lon360[lre_ind360]})
             lr6_res.update({'lon': lr6_lon360[lr6_ind360]})
         else:
             sat_res.update({'lon': sat_lon180})
+            sat_res_up.update({'lon': sat_lon180})
             hre_res.update({'lon': hre_val[b'lon180']})
             lre_res.update({'lon': lre_val[b'lon180']})
             lr6_res.update({'lon': lr6_val[b'lon180']})
@@ -2416,11 +2807,31 @@ if __name__ == '__main__':
         #: This is used to get monthly means used for std and student-t-test
         load_stat_name = 'Clim_val/statistic_clt-%i_rad-%i_%s' %(clt, rad, season)
         if os.path.isfile((load_stat_name + '.npy')):
-            e_res = np.load(load_stat_name + '.npy')[0]
-            e_sat_res = e_res['e_sat_res']
-            e_hre_res = e_res['e_hre_res']
-            e_lre_res = e_res['e_lre_res']
-            e_lr6_res = e_res['e_lr6_res']
+            e_res = np.load(load_stat_name + '.npy', allow_pickle=True, encoding='bytes')[0]
+            try:
+                e_sat_res = e_res[b'e_sat_res']
+                e_hre_res = e_res[b'e_hre_res']
+                e_lre_res = e_res[b'e_lre_res']
+                e_lr6_res = e_res[b'e_lr6_res']
+            except:
+                e_sat_res = e_res['e_sat_res']
+                e_hre_res = e_res['e_hre_res']
+                e_lre_res = e_res['e_lre_res']
+                e_lr6_res = e_res['e_lr6_res']
+            #: Convert byte to utf8
+            fname_list = list(e_sat_res.keys())
+            for fname in fname_list:
+                fname_pop = fname
+                try:
+                    fname = fname.decode('UTF-8')
+                except:
+                    fname = fname
+                e_sat_res.update({fname: e_sat_res.pop(fname_pop)})
+                if '90_' in fname:
+                    continue
+                e_hre_res.update({fname: e_hre_res.pop(fname_pop)})
+                e_lre_res.update({fname: e_lre_res.pop(fname_pop)})
+                e_lr6_res.update({fname: e_lr6_res.pop(fname_pop)})
         else:
             if season in ['djf', 'mam', 'jja', 'son']:
                 ant_mon = 3 * 4 #: ant monad * year
@@ -2428,7 +2839,9 @@ if __name__ == '__main__':
                 ant_mon = 11
             elif season in ['ensoN']:
                 ant_mon = 22
-            if season in ['djf', 'ensoP']:
+            else:
+                ant_mon = 12 * 4
+            if season in ['djf', 'ensoP', 'all']:
                 ant_mon_sat = ant_mon - 1 #: 2009-12 not used
             else:
                 ant_mon_sat = ant_mon
@@ -2486,8 +2899,9 @@ if __name__ == '__main__':
 #                          'sw_vert': np.zeros([43, ant_mon]), 'cfd_vert': np.zeros([43, ant_mon])}
             mi = -1
             si = -1
-            test_hre = np.zeros([43, 170, 1024, ant_mon])
-            test_sat = np.zeros([125, 61, 360, ant_mon_sat])
+            if rad == 1:
+                test_hre = np.zeros([43, 170, 1024, ant_mon])
+                test_sat = np.zeros([125, 61, 360, ant_mon_sat])
             
             for e_year in ['2007', '2008', '2009', '2010']:
                 e_months = all_months_comb['%s_months' %season]
@@ -2500,14 +2914,16 @@ if __name__ == '__main__':
                     #: Sat
                     if not ((e_year == '2009') and (e_mon == '12')):
                         si = si + 1
-                        e_sat_val, notused1, notused2 = loadSat(e_year, e_mon, clt)
+                        e_sat_val, notused1, notused2 = loadSat(e_year, e_mon, clt, up=utanP)
                         e_sat_res_temp = getSat(e_sat_val, rad)
-                        test_sat[:,:,:,si] = e_sat_res_temp['c_sw']
+                        if rad == 1:
+                            test_sat[:,:,:,si] = e_sat_res_temp['c_sw']
                     
                     #: HRE
                     e_hre_val, notused1, notused2, e_hlatind, e_hre_val_cfd = loadModel('HR', ece_ver, e_year, e_mon, rad_read)
                     e_hre_res_temp = getEceart(e_hre_val, rad, e_hlatind, obt_cf=e_hre_val_cfd)
-                    test_hre[:,:,:,mi] = e_hre_res_temp['c_sw']
+                    if rad == 1:
+                        test_hre[:,:,:,mi] = e_hre_res_temp['c_sw']
                     
                     #: LRE
                     e_lre_val, notused1, notused2, e_llatind, e_lre_val_cfd = loadModel('LR', ece_ver, e_year, e_mon, rad_read)#, loadextra=options.Extra)
@@ -2565,8 +2981,32 @@ if __name__ == '__main__':
             np.save(load_stat_name, [{'e_sat_res': e_sat_res, 'e_hre_res': e_hre_res, 
                                       'e_lre_res': e_lre_res, 'e_lr6_res': e_lr6_res}])
         all_res.update({'%s_sat' %season: sat_res, '%s_hre' %season: hre_res, '%s_lre' %season: lre_res, '%s_lr6' %season: lr6_res})
+        if utanP:
+            all_res.update({'%s_sat_up' %season: sat_res_up})
         all_res.update({'e_%s_sat' %season: e_sat_res, 'e_%s_hre' %season: e_hre_res, 'e_%s_lre' %season: e_lre_res, 'e_%s_lr6' %season: e_lr6_res})
-    
+    if options.Month in [-7]:
+        for i in ['sat_up','sat', 'hre', 'lre', 'lr6']:
+            if (not utanP) and (i=='sat_up'):
+                continue
+            all_res.update({'all_%s' %i: {}})
+            all_res.update({'e_all_%s' %i: {}})
+            for h in all_res['djf_%s' %i].keys():
+                try:
+                    temp = np.nanmean([all_res['djf_%s' %i][h], all_res['mam_%s' %i][h], \
+                                       all_res['jja_%s' %i][h], all_res['son_%s' %i][h]], axis=0)
+                    all_res['all_%s' %i].update({h: temp})
+                except:
+                    pdb.set_trace()
+            if (i=='sat_up'):
+                continue
+            for h in all_res['e_djf_%s' %i].keys():
+                if all_res['e_djf_%s' %i][h].ndim == 2:
+                    axel=1
+                elif all_res['e_djf_%s' %i][h].ndim == 3:
+                    axel=2
+                temp = np.concatenate([all_res['e_djf_%s' %i][h], all_res['e_mam_%s' %i][h], \
+                                   all_res['e_jja_%s' %i][h], all_res['e_son_%s' %i][h]], axis=axel)
+                all_res['e_all_%s' %i].update({h: temp})
     stLat = {'sat': sat_stLat, 'hre': hre_stLat, 'lre': lre_stLat, 'lr6': lr6_stLat}
     height_sat = range(0, 240 * 125, 240)
     all_figname_diff = 'Plots/PlotData/xxx_diff_ece-%s_y-%s_s-%s' %(ece_ver, year_name, season)
@@ -2598,15 +3038,15 @@ if __name__ == '__main__':
         figname_diff = figname_diff.replace('ece-%s' %ece_ver, 'ece-%s-yyy' %ece_ver)
         if rad == 1:
             if options.Month in [-5, -6]:
-                sat_valminmax = 2
+                sat_valminmax = 1.5
             else:
-                sat_valminmax = 2
+                sat_valminmax = 1.5
             if clt == 8:
                 sat_valminmax = 8
             
-            hre_valminmax = 2
-            lre_valminmax = 2
-            lr6_valminmax = 2
+            hre_valminmax = 1.5
+            lre_valminmax = 1.5
+            lr6_valminmax = 1.5
                         
             if useClim:
                 sat_valminmax = 1 #sat_valminmax / 2
@@ -2615,45 +3055,58 @@ if __name__ == '__main__':
                 lr6_valminmax = 1 #lre_valminmax / 2
             
             valminmax = {'sat': sat_valminmax, 'hre': hre_valminmax, 'lre': lre_valminmax, 'lr6': lr6_valminmax}
-            valminmax_diff = {'lre': 0.5, 'lr6': 0.5}
-            if options.Month == -7:
+            if options.Month in [-7, -100]:
                 figname = {'sat': sat_figname.replace(season, '4'), 'hre': hre_figname.replace(season, '4'), 'lre': lre_figname.replace(season, '4'), 'lr6': lr6_figname.replace(season, '4')}
                 figname_vert = figname['hre'].replace('HR%s' %ece_ver, 'All')
                 figname_diff = figname_diff.replace(season, '4')
                 
                 figname_vert_1 = figname['hre'].replace('HR%s' %ece_ver, 'All').replace('all_s-4', 'all_s-1')
                 figname_vert_3 = figname['hre'].replace('HR%s' %ece_ver, 'All').replace('all_s-4', 'all_s-3')
-                
-                
-                
-                plotVertRHDSeason(all_res, height, figname_vert_1, useClim, months=['djf'])
-                plotVertRHDSeason(all_res, height, figname_vert_3, useClim, months=['mam', 'jja', 'son'])
-                plotVertRHDSeason(all_res, height, figname_vert, useClim)
-                plotLonSeason_diff(all_res, stLat, 1, figname_diff, 'hre', 'sat', useClim, use_datline_center, extraLon=(hre_res['lon'], sat_res['lon']))
-
+                if options.Month == -100:
+                    plotVertRHDAll(all_res, height, figname_vert, useClim)
+                    plotLonAll(all_res, stLat, valminmax, figname, useClim, use_datline_center)
+                    pdb.set_trace()
+                else:
+                    plotLonSeason(all_res, stLat, valminmax, figname, useClim, use_datline_center)
+                    lonseasondiff = {}                
+                    temp = plotLonSeason_diff(all_res, stLat, 1.5, figname_diff, 'hre', 'sat', useClim, use_datline_center, extraLon=(hre_res['lon'], sat_res['lon']), return_data=True)
+                    lonseasondiff.update({'hre_sat':temp})
+                    temp = plotLonSeason_diff(all_res, stLat, 0.5, figname_diff, 'hre', 'lre', useClim, use_datline_center, return_data=True)
+                    lonseasondiff.update({'hre_lre':temp})
+                    temp = plotLonSeason_diff(all_res, stLat, 0.5, figname_diff, 'lr6', 'lre', useClim, use_datline_center, return_data=True)
+                    lonseasondiff.update({'lr6_lre':temp})
 
 #                 plotLonSeason_diff(all_res, stLat, 1, figname_diff, 'lre', 'sat', useClim, use_datline_center, extraLon=(lre_res['lon'], sat_res['lon']))
 #                 plotLonSeason_diff(all_res, stLat, 1, figname_diff, 'lr6', 'sat', useClim, use_datline_center, extraLon=(lr6_res['lon'], sat_res['lon']))
 #                 plotLonSeason_diff(all_res, stLat, 0.5, figname_diff, 'hre', 'lr6', useClim, use_datline_center)
-                plotLonSeason_diff(all_res, stLat, 0.5, figname_diff, 'hre', 'lre', useClim, use_datline_center)
-                plotLonSeason_diff(all_res, stLat, 0.5, figname_diff, 'lr6', 'lre', useClim, use_datline_center)
-                plotLonSeason(all_res, stLat, valminmax, figname, useClim, use_datline_center)
+#                 plotLonSeason(all_res, stLat, valminmax, figname, useClim, use_datline_center, diff_val=lonseasondiff)
+                if False:
+                #: Did the lonSeason_diff to be able to put the lonSeason_diff andlonSeason in same figure. 
+                #: But it was not necessary. Used convert in linux instead
+                    plotVertRHDSeason(all_res, height, figname_vert_1, useClim, months=['djf'])
+                    plotVertRHDSeason(all_res, height, figname_vert_3, useClim, months=['mam', 'jja', 'son'])
+                    plotVertRHDSeason(all_res, height, figname_vert, useClim)
 #                 plotVertRHDSeason_area(all_res, height, stLat, figname_vert, useClim, use_datline_center)
 #                 plotVertRHD_CF_Season(all_res, height, figname_vert, useClim)
+                pdb.set_trace()
+                sys.exit()
                 print('Time for presentation')
+                
                 pdb.set_trace()
                 plotLonSeason_forPresentation(all_res, stLat, valminmax, figname, useClim, use_datline_center)
                 plotLonSeason_diff_forPresentation(all_res, stLat, 1, figname_diff, 'hre', 'sat', useClim, use_datline_center, extraLon=(hre_res['lon'], sat_res['lon']))
                 pdb.set_trace()
             else:
+                valminmax_diff = {'lre': 1.0, 'lr6': 1.0}
                 figname_vert = figname['hre'].replace('HR%s' %ece_ver, 'All')
                 if options.Month == -8:
                     figname_vert = figname_vert.replace(season, 'enso')
+                    plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'lr6', 'sat', useClim=useClim, use_datline_center=use_datline_center, useSMA=5, extraLon=(lr6_res['lon'], sat_res['lon']))
+                    plotLonEnso(all_res, stLat, valminmax, figname, useClim, use_datline_center, useSMA=5)
                     plotVertRHD_Enso(all_res, height, stLat, figname_vert, useClim, use_datline_center)
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'hre', 'sat', useClim=useClim, use_datline_center=use_datline_center, useSMA=5, extraLon=(hre_res['lon'], sat_res['lon']))
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'hre', 'lre', useClim=useClim, use_datline_center=use_datline_center)
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'lr6', 'lre', useClim=useClim, use_datline_center=use_datline_center)
-                    plotLonEnso(all_res, stLat, valminmax, figname, useClim, use_datline_center, useSMA=5)
                     
 #                 if useClim == False:
 # #                     figname_vert = {'sw': figname['hre'].replace('HR%s' %ece_ver, 'SW'), \
@@ -2682,19 +3135,24 @@ if __name__ == '__main__':
     elif rad in [4]:
         figname90 = 'Plots/PlotData/wc90_%s' %hre_filename.replace('_rad-%i' %rad, '').replace('HR%s' %ece_ver, 'All')
         ticksen90 = {'iwc': np.array([0, 0.005, 0.01, 0.015]), \
-                     'lwc': np.array([0, 0.01, 0.02, 0.03]), \
+                     'lwc': np.array([0, 0.01, 0.02, 0.03, 0.04]), \
                      'cfd': np.array([0, 0.05, 0.10, 0.15, 0.20])}
             
-        if options.Month == -7:
+        if options.Month in [-7, -100]:
             
             figname90 = figname90.replace(season, '4')
             figname90_cf = figname90.replace('wc90', 'wc90_cf')
             figname90_cf_1 = figname90_cf.replace('all_s-4', 'all_s-1')
             figname90_cf_3 = figname90_cf.replace('all_s-4', 'all_s-3')
 #             figname90_cf = figname90_cf.replace('/wc90', '/wc90Norm')
-            plotWC_CF_Season(all_res, height, figname90_cf_1, ticksen90, useClim, months=['djf'])
-            plotWC_CF_Season(all_res, height, figname90_cf_3, ticksen90, useClim, months=['mam', 'jja', 'son'])
-            plotWC_CF_Season(all_res, height, figname90_cf, ticksen90, useClim)
+            pdb.set_trace()
+            if options.Month == -100:
+                ticksen90['lwc'] = np.array([0, 0.01, 0.02, 0.03])
+                plotWC_CF_All(all_res, height, figname90_cf, ticksen90, useClim, up=utanP)
+            else:
+                plotWC_CF_Season(all_res, height, figname90_cf_1, ticksen90, useClim, months=['djf'], up=utanP)
+                plotWC_CF_Season(all_res, height, figname90_cf_3, ticksen90, useClim, months=['mam', 'jja', 'son'], up=utanP)
+                plotWC_CF_Season(all_res, height, figname90_cf, ticksen90, useClim, up=utanP)
 #             plotWC_CF_Season_area(all_res, height, stLat,  figname90_cf, ticksen90, useClim, use_datline_center)
 #             plotWCSeason(all_res, height, figname90, ticksen90, useClim)
         elif options.Month in [-8]:
@@ -2712,10 +3170,12 @@ if __name__ == '__main__':
 
 
     
-# python2 plotData.py -m -7 -r 4
-# python2 plotData.py -m -7 -r 1
-# python2 plotData.py -m -8 -r 4
-# python2 plotData.py -m -8 -r 1
+# python plotData.py -m -7 -r 1 # Fig 1-4
+# python plotData.py -m -7 -r 4 # ?
+# python plotData.py -m -100 -r 1 # Fig 5-6
+# python plotData.py -m -100 -r 4 # Fig 7
+# python plotData.py -m -8 -r 4
+# python plotData.py -m -8 -r 1
     
 #: Presentation Defence Fig 1
     
