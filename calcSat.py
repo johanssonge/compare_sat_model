@@ -29,28 +29,28 @@ def getCf(h5f, h5fA, li, clt, nc = False, rel = False):
     if clt == 45:
         #: Read the value from cloud 4 and 5 and add them together
         #: Day time
-        dval = h5f['cf/d/d_%i' %4].value[:, li, :] + h5f['cf/d/d_%i' %5].value[:, li, :]
+        dval = h5f['cf/d/d_%i' %4][()][:, li, :] + h5f['cf/d/d_%i' %5][()][:, li, :]
         #: Night time
-        nval = h5f['cf/n/n_%i' %4].value[:, li, :] + h5f['cf/n/n_%i' %5].value[:, li, :]
+        nval = h5f['cf/n/n_%i' %4][()][:, li, :] + h5f['cf/n/n_%i' %5][()][:, li, :]
     else:
         #: Read the value from cloud
         #: Day time 
-        dval = h5f['cf/d/d_%i' %clt].value[:, li, :]
+        dval = h5f['cf/d/d_%i' %clt][()][:, li, :]
         #: Night time
-        nval = h5f['cf/n/n_%i' %clt].value[:, li, :]
+        nval = h5f['cf/n/n_%i' %clt][()][:, li, :]
     if rel:
         #: If rel (relative) is true, the value from all cloudy is used in division
         #: Day time
-        dallval = h5fA['cf/d/d_%i' %9].value[:, li, :]
+        dallval = h5fA['cf/d/d_%i' %9][()][:, li, :]
         #: Night time
-        nallval = h5fA['cf/n/n_%i' %9].value[:, li, :]
+        nallval = h5fA['cf/n/n_%i' %9][()][:, li, :]
     else:
         #: Default
         #: Absoute value, the value from all pixels is used in division
         #: Day time
-        dallval = h5fA['cf/d/d_%i' %90].value[:, li, :]
+        dallval = h5fA['cf/d/d_%i' %90][()][:, li, :]
         #: Night time
-        nallval = h5fA['cf/n/n_%i' %90].value[:, li, :]
+        nallval = h5fA['cf/n/n_%i' %90][()][:, li, :]
     #: Cloudy value from both day and night
 #     val = np.sum((dval + nval) , axis=ax)
     val = dval + nval
@@ -92,41 +92,41 @@ def getRH(h5f, h5fC, li, clt, ax, clah = False, claa = False, clrh = False, clra
     #: clrh = clear Heating values
     #: clra = clear Antal values
     if clt == 45:
-        dshr = h5f['rh/d/heating/shr_d_%i' %4].value[:, li, :] + \
-                      h5f['rh/d/heating/shr_d_%i' %5].value[:, li, :]
-        dNshr = h5f['rh/d/heating/norm_shr_d_%i' %4].value[:, li, :] + \
-                       h5f['rh/d/heating/norm_shr_d_%i' %5].value[:, li, :]
-        dlhr = h5f['rh/d/heating/lhr_d_%i' %4].value[:, li, :] +  \
-                      h5f['rh/d/heating/lhr_d_%i' %5].value[:, li, :]
-        nlhr = h5f['rh/n/heating/lhr_n_%i' %4].value[:, li, :] + \
-                      h5f['rh/n/heating/lhr_n_%i' %5].value[:, li, :]
-        ant_dshr = h5f['rh/d/quantity/antal_shr_d_%i' %4].value[:, li, :] + \
-                          h5f['rh/d/quantity/antal_shr_d_%i' %5].value[:, li, :]
-        ant_dNshr = h5f['rh/d/quantity/antal_norm_shr_d_%i' %4].value[:, li, :] + \
-                           h5f['rh/d/quantity/antal_norm_shr_d_%i' %5].value[:, li, :]
-        ant_dlhr = h5f['rh/d/quantity/antal_lhr_d_%i' %4].value[:, li, :] + \
-                          h5f['rh/d/quantity/antal_lhr_d_%i' %5].value[:, li, :]
-        ant_nlhr = h5f['rh/n/quantity/antal_lhr_n_%i' %4].value[:, li, :] + \
-                          h5f['rh/n/quantity/antal_lhr_n_%i' %5].value[:, li, :]
+        dshr = h5f['rh/d/heating/shr_d_%i' %4][()][:, li, :] + \
+                      h5f['rh/d/heating/shr_d_%i' %5][()][:, li, :]
+        dNshr = h5f['rh/d/heating/norm_shr_d_%i' %4][()][:, li, :] + \
+                       h5f['rh/d/heating/norm_shr_d_%i' %5][()][:, li, :]
+        dlhr = h5f['rh/d/heating/lhr_d_%i' %4][()][:, li, :] +  \
+                      h5f['rh/d/heating/lhr_d_%i' %5][()][:, li, :]
+        nlhr = h5f['rh/n/heating/lhr_n_%i' %4][()][:, li, :] + \
+                      h5f['rh/n/heating/lhr_n_%i' %5][()][:, li, :]
+        ant_dshr = h5f['rh/d/quantity/antal_shr_d_%i' %4][()][:, li, :] + \
+                          h5f['rh/d/quantity/antal_shr_d_%i' %5][()][:, li, :]
+        ant_dNshr = h5f['rh/d/quantity/antal_norm_shr_d_%i' %4][()][:, li, :] + \
+                           h5f['rh/d/quantity/antal_norm_shr_d_%i' %5][()][:, li, :]
+        ant_dlhr = h5f['rh/d/quantity/antal_lhr_d_%i' %4][()][:, li, :] + \
+                          h5f['rh/d/quantity/antal_lhr_d_%i' %5][()][:, li, :]
+        ant_nlhr = h5f['rh/n/quantity/antal_lhr_n_%i' %4][()][:, li, :] + \
+                          h5f['rh/n/quantity/antal_lhr_n_%i' %5][()][:, li, :]
     else:
-        dshr = h5f['rh/d/heating/shr_d_%i' %clt].value[:, li, :]
-        dNshr = h5f['rh/d/heating/norm_shr_d_%i' %clt].value[:, li, :]
-        dlhr = h5f['rh/d/heating/lhr_d_%i' %clt].value[:, li, :]
-        nlhr = h5f['rh/n/heating/lhr_n_%i' %clt].value[:, li, :]
-        ant_dshr = h5f['rh/d/quantity/antal_shr_d_%i' %clt].value[:, li, :]
-        ant_dNshr = h5f['rh/d/quantity/antal_norm_shr_d_%i' %clt].value[:, li, :]
-        ant_dlhr = h5f['rh/d/quantity/antal_lhr_d_%i' %clt].value[:, li, :]
-        ant_nlhr = h5f['rh/n/quantity/antal_lhr_n_%i' %clt].value[:, li, :]
+        dshr = h5f['rh/d/heating/shr_d_%i' %clt][()][:, li, :]
+        dNshr = h5f['rh/d/heating/norm_shr_d_%i' %clt][()][:, li, :]
+        dlhr = h5f['rh/d/heating/lhr_d_%i' %clt][()][:, li, :]
+        nlhr = h5f['rh/n/heating/lhr_n_%i' %clt][()][:, li, :]
+        ant_dshr = h5f['rh/d/quantity/antal_shr_d_%i' %clt][()][:, li, :]
+        ant_dNshr = h5f['rh/d/quantity/antal_norm_shr_d_%i' %clt][()][:, li, :]
+        ant_dlhr = h5f['rh/d/quantity/antal_lhr_d_%i' %clt][()][:, li, :]
+        ant_nlhr = h5f['rh/n/quantity/antal_lhr_n_%i' %clt][()][:, li, :]
     
     
-    d_c_shr = h5fC['rh/d/heating/shr_d_%i' %0].value[:, li, :]
-    d_c_Nshr = h5fC['rh/d/heating/norm_shr_d_%i' %0].value[:, li, :]
-    d_c_lhr = h5fC['rh/d/heating/lhr_d_%i' %0].value[:, li, :]
-    n_c_lhr = h5fC['rh/n/heating/lhr_n_%i' %0].value[:, li, :]
-    ant_d_c_shr = h5fC['rh/d/quantity/antal_shr_d_%i' %0].value[:, li, :]
-    ant_d_c_Nshr = h5fC['rh/d/quantity/antal_norm_shr_d_%i' %0].value[:, li, :]
-    ant_d_c_lhr = h5fC['rh/d/quantity/antal_lhr_d_%i' %0].value[:, li, :]
-    ant_n_c_lhr = h5fC['rh/n/quantity/antal_lhr_n_%i' %0].value[:, li, :]
+    d_c_shr = h5fC['rh/d/heating/shr_d_%i' %0][()][:, li, :]
+    d_c_Nshr = h5fC['rh/d/heating/norm_shr_d_%i' %0][()][:, li, :]
+    d_c_lhr = h5fC['rh/d/heating/lhr_d_%i' %0][()][:, li, :]
+    n_c_lhr = h5fC['rh/n/heating/lhr_n_%i' %0][()][:, li, :]
+    ant_d_c_shr = h5fC['rh/d/quantity/antal_shr_d_%i' %0][()][:, li, :]
+    ant_d_c_Nshr = h5fC['rh/d/quantity/antal_norm_shr_d_%i' %0][()][:, li, :]
+    ant_d_c_lhr = h5fC['rh/d/quantity/antal_lhr_d_%i' %0][()][:, li, :]
+    ant_n_c_lhr = h5fC['rh/n/quantity/antal_lhr_n_%i' %0][()][:, li, :]
 
 
     if False in [clah, claa, clrh, clra]:
@@ -188,17 +188,17 @@ def getRH(h5f, h5fC, li, clt, ax, clah = False, claa = False, clrh = False, clra
 def getWC(h5f, h5fC, li, clt, clah = False, claa = False, clrh = False, clra = False):
     
     #: Day time
-    diwc = h5f['rh/d/heating/%s_d_%i' %('iwc', clt)].value[:, li, :]
-    ant_diwc = h5f['rh/d/quantity/antal_%s_d_%i' %('iwc', clt)].value[:, li, :]
+    diwc = h5f['rh/d/heating/%s_d_%i' %('iwc', clt)][()][:, li, :]
+    ant_diwc = h5f['rh/d/quantity/antal_%s_d_%i' %('iwc', clt)][()][:, li, :]
     
-    dlwc = h5f['rh/d/heating/%s_d_%i' %('lwc', clt)].value[:, li, :]
-    ant_dlwc = h5f['rh/d/quantity/antal_%s_d_%i' %('lwc', clt)].value[:, li, :]
+    dlwc = h5f['rh/d/heating/%s_d_%i' %('lwc', clt)][()][:, li, :]
+    ant_dlwc = h5f['rh/d/quantity/antal_%s_d_%i' %('lwc', clt)][()][:, li, :]
     
-    d_c_iwc = h5fC['rh/d/heating/%s_d_%i' %('iwc', 0)].value[:, li, :]
-    ant_d_c_iwc = h5fC['rh/d/quantity/antal_%s_d_%i' %('iwc', 0)].value[:, li, :]
+    d_c_iwc = h5fC['rh/d/heating/%s_d_%i' %('iwc', 0)][()][:, li, :]
+    ant_d_c_iwc = h5fC['rh/d/quantity/antal_%s_d_%i' %('iwc', 0)][()][:, li, :]
     
-    d_c_lwc = h5fC['rh/d/heating/%s_d_%i' %('lwc', 0)].value[:, li, :]
-    ant_d_c_lwc = h5fC['rh/d/quantity/antal_%s_d_%i' %('lwc', 0)].value[:, li, :]
+    d_c_lwc = h5fC['rh/d/heating/%s_d_%i' %('lwc', 0)][()][:, li, :]
+    ant_d_c_lwc = h5fC['rh/d/quantity/antal_%s_d_%i' %('lwc', 0)][()][:, li, :]
     
     if False in [clah, claa, clrh, clra]:
         clah = {'diwc': diwc, 'dlwc': dlwc}
@@ -456,15 +456,15 @@ def getCfRh(h5f, h5fA, h5fC, latInd, clt, dn=''):
 
 def getTOA(h5f, h5fC, li, clt, btf=False, bta=False, btfC=False, btaC=False):
     
-    tdshrF = h5f['TOA-BOACRE/d/TOACRE/tshr_d_%i' %clt].value[:,li,:]
-    tdlhrF = h5f['TOA-BOACRE/d/TOACRE/tlhr_d_%i' %clt].value[:,li,:]
-    tdshrA = h5f['TOA-BOACRE/d/TOACRE/antal_tshr_d_%i' %clt].value[:,li,:]
-    tdlhrA = h5f['TOA-BOACRE/d/TOACRE/antal_tlhr_d_%i' %clt].value[:,li,:]
+    tdshrF = h5f['TOA-BOACRE/d/TOACRE/tshr_d_%i' %clt][()][:,li,:]
+    tdlhrF = h5f['TOA-BOACRE/d/TOACRE/tlhr_d_%i' %clt][()][:,li,:]
+    tdshrA = h5f['TOA-BOACRE/d/TOACRE/antal_tshr_d_%i' %clt][()][:,li,:]
+    tdlhrA = h5f['TOA-BOACRE/d/TOACRE/antal_tlhr_d_%i' %clt][()][:,li,:]
     
-    tdshrFC = h5fC['TOA-BOACRE/d/TOACRE/tshr_d_%i' %0].value[:,li,:]
-    tdlhrFC = h5fC['TOA-BOACRE/d/TOACRE/tlhr_d_%i' %0].value[:,li,:]
-    tdshrAC = h5fC['TOA-BOACRE/d/TOACRE/antal_tshr_d_%i' %0].value[:,li,:]
-    tdlhrAC = h5fC['TOA-BOACRE/d/TOACRE/antal_tlhr_d_%i' %0].value[:,li,:]
+    tdshrFC = h5fC['TOA-BOACRE/d/TOACRE/tshr_d_%i' %0][()][:,li,:]
+    tdlhrFC = h5fC['TOA-BOACRE/d/TOACRE/tlhr_d_%i' %0][()][:,li,:]
+    tdshrAC = h5fC['TOA-BOACRE/d/TOACRE/antal_tshr_d_%i' %0][()][:,li,:]
+    tdlhrAC = h5fC['TOA-BOACRE/d/TOACRE/antal_tlhr_d_%i' %0][()][:,li,:]
     if btf == False:
         btf = {'tdshrF': tdshrF, 'tdlhrF': tdlhrF}
         bta = {'tdshrA': tdshrA, 'tdlhrA': tdlhrA}
@@ -490,7 +490,7 @@ def getTOA(h5f, h5fC, li, clt, btf=False, bta=False, btfC=False, btaC=False):
 def read4D(h5file, h5fileC, datasets, areaind, retv=False, latlon=False):
 
     dn = 'd'
-    stlat = h5file['Start Latitude'].value
+    stlat = h5file['Start Latitude'][()]
     lons = np.asarray(range(-180, 180))
     lats = stlat
     latInd = np.where((stlat >= minLat) & (stlat < maxLat))[0]
@@ -500,7 +500,7 @@ def read4D(h5file, h5fileC, datasets, areaind, retv=False, latlon=False):
         for dataset in datasets:
             dset_shape = '%s_%s_%s' %(dataset, 'd', ct)
             dsetC_shape = '%s_%s_%s' %(dataset, 'd', '0')
-#             data_shape = h5file['d4/shape/%s' %dset_shape].value
+#             data_shape = h5file['d4/shape/%s' %dset_shape][()]
             retv.update({dset_shape: np.zeros([len(lats), len(lons)])})
             retv.update({dset_shape + '_antal': np.zeros([len(lats), len(lons)])})
             retv.update({dsetC_shape: np.zeros([len(lats), len(lons)])})
@@ -526,7 +526,7 @@ def read4D(h5file, h5fileC, datasets, areaind, retv=False, latlon=False):
         pdb.set_trace()
         if areaind == '':
             if lat in latInd:
-                retv[height] = np.hstack((retv[height], val.value))
+                retv[height] = np.hstack((retv[height], val[()]))
                 pdb.set_trace()
         else:
             try:
@@ -535,7 +535,7 @@ def read4D(h5file, h5fileC, datasets, areaind, retv=False, latlon=False):
                 print('bajs')
                 pdb.set_trace()
             if areaind[lati, loni]:
-                retv[height] = np.hstack((retv[height], val.value))
+                retv[height] = np.hstack((retv[height], val[()]))
     if latlon:
         retv.update({'lon':lons})
         retv.update({'lat':lats})
@@ -560,6 +560,8 @@ if __name__ == '__main__':
     
     mainDir = '/nobackup/smhid12/sm_erjoh/PhD-2'
     datadir = '%s/Data/hitRate' %mainDir
+    mainDir4 = '/nobackup/smhid14/sm_erjoh/PhD-2' #'/nobackup/smhid12/sm_erjoh/PhD-2'
+    datadir4 = '%s/Data/hitRate' %mainDir4
     #: Years
     if options.Year == 1:
         years = [7, 8, 9, 10]
@@ -615,15 +617,18 @@ if __name__ == '__main__':
                     continue
             
             l = l + 1
-            satname = '%s/nc_m_%03i_%i_y%02i.h5' %(datadir, mon, clt, year)
+            satname = '%s/nc_m_%03i_%i_y%02i_utanP.h5' %(datadir4, mon, clt, year)
             satnameA = '%s/nc_m_%03i_90_y%02i.h5' %(datadir, mon, year)
             satnameC = '%s/nc_m_%03i_0_y%02i.h5' %(datadir, mon, year)
+#             if satname in ['/nobackup/smhid14/sm_erjoh/PhD-2/Data/hitRate/nc_m_002_9_y08_utanP.h5']:
+#                 continue
+            
             if (mon == 12) and (year == 9):
                 continue
             h5file = h5py.File(satname, 'r')
             h5fileA = h5py.File(satnameA, 'r')
             h5fileC = h5py.File(satnameC, 'r')
-            stLat = h5file['Start Latitude'].value
+            stLat = h5file['Start Latitude'][()]
             latInd = (stLat >= minLat) & (stLat < maxLat)
             allLat = np.ones(stLat.shape).astype('bool')
             if l == 0:
@@ -728,7 +733,7 @@ if __name__ == '__main__':
 #                  'c_lwc_std': np.nanstd(lwcClrd_m, axis=(0,2,3)), 'a_lwc_std': np.nanstd(lwcClod_m, axis=(0,2,3)), 'lwc_std': np.nanstd(lwc_m, axis=(0,2,3)), \
 #                  '90_iwc_std': np.nanstd(iwc90_m, axis=(0,2,3)), '90_lwc_std': np.nanstd(lwc90_m, axis=(0,2,3)), \
 #                  'cfd_std': np.nanstd(cfd_m, axis=(0,2,3)), \
-    savename = 'Clim_val/sat_y-%s_s-%s_clt-%i' %(year_name, season, clt)
+    savename = 'Clim_val/sat_y-%s_s-%s_clt-%i_utanP' %(year_name, season, clt)
     np.save(savename, [save_dict])
     sys.exit()
     

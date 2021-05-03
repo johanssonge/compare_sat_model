@@ -15,7 +15,7 @@ import time
 import h5py
 
 import numpy as np
-import pp  # @UnresolvedImport
+# import pp  # @UnresolvedImport
 # from multiprocessing.pool import worker
 import copy
 import warnings
@@ -109,7 +109,7 @@ def convertDType(val):
     
     return re
 def makeDataUsefull(data, nv = False, attrs = [], ntb = True):
-    val = data.value
+    val = data[()]
     val = convertDType(val)
     if attrs == []:
         try:
@@ -133,17 +133,17 @@ def makeDataUsefull(data, nv = False, attrs = [], ntb = True):
 #         data.attrs['_FillValue']
     else:
         try:
-            missing = attrs[0][attrs[1] + '.missing'].value[0][0]
+            missing = attrs[0][attrs[1] + '.missing'][()][0][0]
         except:
             missing = np.nan
         try:
-            lv = attrs[0][attrs[1] + '.valid_range'].value[0][0][0]
-            hv = attrs[0][attrs[1] + '.valid_range'].value[0][0][1]
+            lv = attrs[0][attrs[1] + '.valid_range'][()][0][0][0]
+            hv = attrs[0][attrs[1] + '.valid_range'][()][0][0][1]
         except:
             lv = np.nan
             hv = np.nan
-        factor = attrs[0][attrs[1] + '.factor'].value[0][0]
-        offset = attrs[0][attrs[1] + '.offset'].value[0][0]
+        factor = attrs[0][attrs[1] + '.factor'][()][0][0]
+        offset = attrs[0][attrs[1] + '.offset'][()][0][0]
     if nv:
         # TODO: I remove error message
         np.seterr(invalid='ignore')
@@ -296,7 +296,11 @@ def readTauType(filename, latlon = False):
 def readCwcType(filename, latlon = False):
     
     retv = {'ice_water_content': np.array([]), 'ice_water_path': np.array([]), \
-            'liq_water_content': np.array([]), 'liq_water_path': np.array([])}
+            'liq_water_content': np.array([]), 'liq_water_path': np.array([])}#, \
+#             'ice_water_content_precip': np.array([]), 'ice_water_path_precip': np.array([]), \
+#             'liq_water_content_precip': np.array([]), 'liq_water_path_precip': np.array([]), \
+#             'ice_water_content_oprecip': np.array([]), 'ice_water_path_oprecip': np.array([]), \
+#             'liq_water_content_oprecip': np.array([]), 'liq_water_path_oprecip': np.array([])}
     if filename != '':
         h5file = h5py.File(filename, 'r')
         root = "2B-CWC-RVOD"
@@ -306,6 +310,20 @@ def readCwcType(filename, latlon = False):
         retv['ice_water_path'] = makeDataUsefull(h5file["%s/%s/%s" % (root, group, 'RVOD_ice_water_path')], nv=True)
         retv['liq_water_content'] = makeDataUsefull(h5file["%s/%s/%s" % (root, group, 'RVOD_liq_water_content')], nv=True)
         retv['liq_water_path'] = makeDataUsefull(h5file["%s/%s/%s" % (root, group, 'RVOD_liq_water_path')], nv=True)
+        temp = makeDataUsefull(h5file["%s/%s/%s" % (root, group, 'RVOD_CWC_status')], nv=True).astype(int)
+#         flag2bit = [(x>>2) & 1 for x in temp]
+        flag2bit = np.bitwise_and((temp >> 2), 1)
+        flagT = flag2bit==1
+        flagNT = ~flagT
+        #: Create a 2D array with all nans
+        nans = np.ones(retv['ice_water_content'].shape) * np.nan
+        #: Put all values where bit2 = 1 to nan
+        retv['ice_water_content'][flagT,:] = nans[flagT,:]
+        retv['liq_water_content'][flagT,:] = nans[flagT,:]
+        #: Same but for 1D
+        retv['ice_water_path'][flagT] = np.nan
+        retv['liq_water_path'][flagT] = np.nan
+        
         if latlon:
             group = 'Geolocation Fields'
             lat = makeDataUsefull(h5file["%s/%s/%s" % (root, group, 'Latitude')], nv=True)
@@ -618,7 +636,7 @@ def  findValuedData(flxfile, clTfile, geoFile, tauFile, cwcFile, auxFile, differ
         #: If temp file exist and (deafault) options loadTemp, use temp files instead of new calculation
         if os.path.isfile(loadname):
             try:
-                resDict, resDict2, resDict3, resDict4, resDict5 = np.load(loadname)
+                resDict, resDict2, resDict3, resDict4, resDict5 = np.load(loadname, allow_pickle=True)
                 print('load')
             except:
                 print('wrong load')
@@ -1880,6 +1898,12 @@ def getClcGeo(flxname, mainclc, maingeo, maintau, maincwc, mainaux):
     J = int(lidBasename[4:7])
     dates = datetime.datetime.strptime('%i %03i' %(y, J), '%Y %j')
     mon = dates.month
+    
+    if len(clcfile) == 0:
+        #: Find CLC files
+        ClcName = '%s/%d/%02d/%s*2B-CLDCLASS-LIDAR*.h5' %(mainclc, y, mon, lidBasename.split('2B-FLXHR-LIDAR')[0])
+        clcfile = glob.glob(ClcName)
+    
     GeoName = '%s/%i/%02i/%s*.h5' %(maingeo, y, mon, lidBasename.split('2B-FLXHR-LIDAR')[0])
     geofile = glob.glob(GeoName)
     
@@ -1891,7 +1915,7 @@ def getClcGeo(flxname, mainclc, maingeo, maintau, maincwc, mainaux):
     
     AuxName = '%s/%i/%02i/%s*.h5' %(mainaux, y, mon, lidBasename.split('2B-FLXHR-LIDAR')[0])
     auxfile = glob.glob(AuxName)
-    
+
     if len(clcfile) > 1:
         print('what clc')
         sys.exit()
@@ -1924,7 +1948,7 @@ if __name__ == '__main__':
                       'Use a file')
     parser.add_option('-l', '--loadTemp', action='store_false', default = True, help = \
                       'If you dont wont to use tempfiles')
-    parser.add_option('-m', '--Month', type='int', default=01, help = \
+    parser.add_option('-m', '--Month', type='int', default=1, help = \
                       'Defines the month')
     parser.add_option('-n', '--num', action='store_true', default=False, help = \
                       'Ett test som jag inte kommer ihag, Default = 0')
@@ -1940,14 +1964,14 @@ if __name__ == '__main__':
     parser.add_option('-y', '--Year', type='int', default=2007, help = \
                       'Defines the year')
     options, argument = parser.parse_args()
-    mainDir = '/nobackup/smhid12/sm_erjoh/PhD-2'
-    mainTemp = '/nobackup/smhid13/sm_erjoh/PhD-2/TempFiles/crhabove'
-    mainLid = '/nobackup/smhid12/sm_erjoh/data/cloudsat/2B-FLXHR-LIDAR'
-    mainClc = '/nobackup/smhid12/sm_erjoh/data/cloudsat/2B-CLDCLASS-LIDAR'
-    mainGeo = '/nobackup/smhid12/sm_erjoh/data/cloudsat/2B-GEOPROF'
-    mainTau = '/nobackup/smhid12/sm_erjoh/data/cloudsat/2B-TAU'
-    mainCwc = '/nobackup/smhid12/sm_erjoh/data/cloudsat/2B-CWC-RVOD'
-    mainAux = '/nobackup/smhid12/sm_erjoh/data/cloudsat/ECMWF-AUX'
+    mainDir = '/nobackup/smhid14/sm_erjoh/PhD-2'
+    mainTemp = '/nobackup/smhid14/sm_erjoh/PhD-2/TempFiles/crhabove'
+    mainLid = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/2B-FLXHR-LIDAR_V4'
+    mainClc = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/2B-CLDCLASS-LIDAR_V4'
+    mainGeo = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/2B-GEOPROF_V4'
+    mainTau = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/2B-TAU_V4'
+    mainCwc = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/2B-CWC-RVOD_V4'
+    mainAux = '/nobackup/smhid17/proj/foua/data/satellit/cloudsat/ECMWF-AUX_V4'
 
     if options.ct == -1:
         differentCloudTypes = [0,1,2,3,4,5,6,7,8,9,10,27,90,99, 11, 12, 13, 14, 15]
@@ -2024,7 +2048,8 @@ if __name__ == '__main__':
             
             for d in range(lw):
                 doy = d +  stday
-                files.extend(glob.glob('%s/%s%0.3i*.h5' %(mainLid, year, int(doy))))
+                mon = time.strptime("%i %i" %(year, doy) ,"%Y %j").tm_mon
+                files.extend(glob.glob('%s/%d/%0.2d/%s%0.3d*.h5' %(mainLid, year, mon, year, int(doy))))
         print(opptionsText)
         latrange = range(-30, 31)
     elif options.File == 0:
@@ -2116,6 +2141,10 @@ if __name__ == '__main__':
                 temp = []
         files = filerna
     tempFileEnd = 'y%i_m%i_w%i_u%i_r%i' %(options.Year, options.Month, options.Week, options.fn, options.resD)
+    removePrecip = 1
+    if removePrecip == 1:
+        filename = filename.replace('.h5', '_utanP.h5')
+        tempFileEnd + '_utanP'
     for filen in files:
 #        sttime = time.time()
         if not options.par:
@@ -2207,6 +2236,8 @@ if __name__ == '__main__':
 #                         pdb.set_trace()
             if options.Week == 0:
                 print('should this one be used?')
+                print('Probably just use when created one outputfile per inputfile')
+                print('intrusions as time series')
                 sys.exit()
                 SingleFiletoH5(mainDir, singlefileArea, umon, latrange, stDict, stDict2, stDict3, stDict4)
         
@@ -2294,6 +2325,8 @@ if __name__ == '__main__':
 #                                             
                 if options.Week == 0:
                     print('should this one be used?')
+                    print('Probably just use when created one outputfile per inputfile')
+                    print('intrusions as time series')
                     sys.exit()
                     SingleFiletoH5(mainDir, singlefileArea, umon, latrange, stDict, result[1], result[2], result[3])
 #            job_server.print_stats()
