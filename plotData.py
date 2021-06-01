@@ -14,6 +14,8 @@ from calcSat import all_months_comb
 from scipy.stats import ttest_ind, mannwhitneyu  # @UnresolvedImport
 from matplotlib.patches import Ellipse, Rectangle  # @UnresolvedImport
 
+lnw = 1
+alp = 0.3
 
 def getLonLatMask(ll, llmin, llmax):
     llf = ll[0]
@@ -106,14 +108,12 @@ def calculateLonMean(e_res, e_res_stat, namn, i, p, lat):
 def getCbColour():
     from matplotlib import  colors
     from pylab import cm
-    cmap = cm.get_cmap('Set1')
-    colors.rgb2hex(cmap(0))
-#     pdb.set_trace()
-#     pdb.set_trace()
-    colour_sat = colors.rgb2hex(cmap(0))
-    colour_hre = colors.rgb2hex(cmap(1))
-    colour_lre = colors.rgb2hex(cmap(2))
-    colour_lr6 = colors.rgb2hex(cmap(3))
+#     cmap = cm.get_cmap('Set1')
+#     colors.rgb2hex(cmap(0))
+#     colour_sat = colors.rgb2hex(cmap(0))
+#     colour_hre = colors.rgb2hex(cmap(1))
+#     colour_lre = colors.rgb2hex(cmap(2))
+#     colour_lr6 = colors.rgb2hex(cmap(3))
     
     
     CB_color_cycle = {'blue': '#377eb8', 'orange': '#ff7f00', 'green': '#4daf4a',
@@ -334,7 +334,7 @@ def plotLonEnso(rhd, lats, valminmax, figname_st, useClim=False, use_datline_cen
             ax.set_yticklabels(['0', '5', '10', '15', '20'], fontsize='large')
             ax.set_ylabel('Height [km]', fontsize='x-large')
             ax.set_xticks(xticks)
-            if datan != 'hre':
+            if datan != 'lr6':
                 ax.text(1.03, 0.5, '%s' %mon.upper(), ha='center', va='center',rotation=90,transform=ax.transAxes, fontsize='x-large')
 #                 ax.text(0.01, 1.04, chr((f-1) + 97), ha='center', va='center', transform = ax.transAxes, fontsize='x-large')
 # #                 ax.yaxis.set_label_position("right")
@@ -802,10 +802,10 @@ def plotVertRHDAll(rhd, height, figname_ver, useClim = False):
             height_ver_lre = np.where(height_ver_lre > 20000, 20000, height_ver_lre)
             height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
 
-            ax.plot(rhd_ver_sat, height_ver_sat, color=colour['sat'], lw=1, label= 'SAT')
-            ax.plot(rhd_ver_hre, height_ver_hre, color=colour['hre'], lw=1, label= 'E3PH')
-            ax.plot(rhd_ver_lre, height_ver_lre, color=colour['lre'], lw=1, label= 'E3P')
-            ax.plot(rhd_ver_lr6, height_ver_lr6, color=colour['lr6'], lw=1, label= 'E3')
+            ax.plot(rhd_ver_sat, height_ver_sat, color=colour['sat'], lw=lnw, label= 'SAT')
+            ax.plot(rhd_ver_hre, height_ver_hre, color=colour['hre'], lw=lnw, label= 'E3PH')
+            ax.plot(rhd_ver_lre, height_ver_lre, color=colour['lre'], lw=lnw, label= 'E3P')
+            ax.plot(rhd_ver_lr6, height_ver_lr6, color=colour['lr6'], lw=lnw, label= 'E3')
             ax.vlines(0,0,height_ver_sat[-1],color='g', lw=0.5)
             std_ver_sat = np.nanstd(rhd['e_%s_sat' %mon][use_swlw + '_vert'], axis=1)[0:86]
             std_ver_hre = np.nanstd(rhd['e_%s_hre' %mon][use_swlw + '_vert'], axis=1)
@@ -813,10 +813,10 @@ def plotVertRHDAll(rhd, height, figname_ver, useClim = False):
             ax.plot((rhd_ver_sat + std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
             ax.plot((rhd_ver_hre - std_ver_hre), height_ver_hre, lw=0, color=colour['hre'])
             ax.plot((rhd_ver_hre + std_ver_hre), height_ver_hre, lw=0, color=colour['hre'])
-            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=0.3)
-            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.3)
-            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre - std_ver_hre, facecolor=colour['hre'], alpha=0.3)
-            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre + std_ver_hre, facecolor=colour['hre'], alpha=0.3)
+            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=alp)
+            ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=alp)
+            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre - std_ver_hre, facecolor=colour['hre'], alpha=alp)
+            ax.fill_betweenx(height_ver_hre, rhd_ver_hre, rhd_ver_hre + std_ver_hre, facecolor=colour['hre'], alpha=alp)
             if f in [2, 5, 8, 11]:
                 ax.legend(loc=1,prop={'size': 14})
             
@@ -1266,18 +1266,18 @@ def plotWC_CF_All(wc, height, figname_wc, ticksen, useClim = False, up=False):
                 h0ind = height_ver_hre > 17100
                 wc_hre_ver[h0ind] = 0
                 wc_lre_ver[h0ind] = 0
-                wc_lr6_ver[h0ind] = 0    
+                wc_lr6_ver[h0ind] = 0
                             
             height_ver_sat = np.where(height_ver_sat > 20000, 20000, height_ver_sat)
             height_ver_hre = np.where(height_ver_hre > 20000, 20000, height_ver_hre)
             height_ver_lre = np.where(height_ver_lre > 20000, 20000, height_ver_lre)
             height_ver_lr6 = np.where(height_ver_lr6 > 20000, 20000, height_ver_lr6)
-            if up:             
-                ax.plot(wc_sat_ver_up, height_ver_sat, colour['sat'], lw=2, ls='--', label='SAT-WP')
-            ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=2, label='SAT')
-            ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=2, label='E3PH')
-            ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
-            ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
+            if up and (wcil != 'cfd'):             
+                ax.plot(wc_sat_ver_up, height_ver_sat, colour['sat'], lw=lnw*1.5, ls='--', label='SAT-WP')
+            ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=lnw, label='SAT')
+            ax.plot(wc_hre_ver, height_ver_hre, colour['hre'], lw=lnw, label='E3PH')
+            ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=lnw, label='E3P')
+            ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=lnw, label='E3')
             
             mod = 'hre'
             wc_mod_ver = wc_lr6_ver
@@ -1289,14 +1289,14 @@ def plotWC_CF_All(wc, height, figname_wc, ticksen, useClim = False, up=False):
             min_std_sat = np.where(min_std_sat<0, 0, min_std_sat)
             min_std_mod = wc_mod_ver - std_ver_mod
             min_std_mod = np.where(min_std_mod<0, 0, min_std_mod)
-            ax.plot(min_std_sat, height_ver_sat, color=colour['sat'])
-            ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, color=colour['sat'])
-            ax.plot(min_std_mod, height_ver_mod, color=colour[mod])
-            ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, color=colour[mod])
-            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.5)
-            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
-            ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.5)
-            ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.5)
+            ax.plot(min_std_sat, height_ver_sat, lw=0, color=colour['sat'])
+            ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+            ax.plot(min_std_mod, height_ver_mod, lw=0, color=colour[mod])
+            ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, lw=0, color=colour[mod])
+            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=alp)
+            ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=alp)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=alp)
+            ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=alp)
             
 #             ax.plot((wc_sat_ver - wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
 #             ax.plot((wc_sat_ver + wc['%s_sat' %mon][wcil_sat + '_std'][0:86]), height_ver_sat, color=colour['sat'])
@@ -1651,16 +1651,16 @@ def plotWC_CF_Enso(wc, height, lats, figname_org, ticksen, useClim, use_datline_
                 
                 
                 ax.plot(wc_sat_ver, height_ver_sat, colour['sat'], lw=2, label='SAT')
-                ax.plot(min_std_sat, height_ver_sat, color=colour['sat'])
-                ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, color=colour['sat'])
-                ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.5)
-                ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
+                ax.plot(min_std_sat, height_ver_sat, lw=0, color=colour['sat'])
+                ax.plot((wc_sat_ver + std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+                ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], min_std_sat[3:], facecolor=colour['sat'], alpha=0.3)
+                ax.fill_betweenx(height_ver_sat[3:], wc_sat_ver[3:], wc_sat_ver[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.3)
                 
                 ax.plot(wc_mod_ver, height_ver_mod, colour[mod], lw=2, label='E3')
-                ax.plot(min_std_mod, height_ver_mod, color=colour[mod])
-                ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, color=colour[mod])
-                ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.5)
-                ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.5)
+                ax.plot(min_std_mod, height_ver_mod, lw=0, color=colour[mod])
+                ax.plot((wc_mod_ver + std_ver_mod), height_ver_mod, lw=0, color=colour[mod])
+                ax.fill_betweenx(height_ver_mod, wc_mod_ver, min_std_mod, facecolor=colour[mod], alpha=0.3)
+                ax.fill_betweenx(height_ver_mod, wc_mod_ver, wc_mod_ver + std_ver_mod, facecolor=colour[mod], alpha=0.3)
 
 #                 ax.plot(wc_lre_ver, height_ver_lre, colour['lre'], lw=2, label='E3P')
 #                 ax.plot(wc_lr6_ver, height_ver_lr6, colour['lr6'], lw=2, label='E3')
@@ -1771,14 +1771,14 @@ def plotVertRHD_Enso(rhd, height, lats, figname_ver, useClim, use_datline_center
                 std_ver_sat = np.nanstd(rhd['e_%s_sat' %mon][use_swlw + '_vert'][fi,:,:], axis=1)[0:86]  # @UndefinedVariable
                 std_ver_mod = np.nanstd(rhd['e_%s_%s' %(mon, mod)][use_swlw + '_vert'][fi,:,:], axis=1)  # @UndefinedVariable
                 
-                ax.plot((rhd_ver_sat - std_ver_sat), height_ver_sat, color=colour['sat'])
-                ax.plot((rhd_ver_sat + std_ver_sat), height_ver_sat, color=colour['sat'])
-                ax.plot((rhd_ver_mod - std_ver_mod), height_ver_mod, color=colour[mod])
-                ax.plot((rhd_ver_mod + std_ver_mod), height_ver_mod, color=colour[mod])
-                ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
-                ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=0.5)
-                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod - std_ver_mod, facecolor=colour[mod], alpha=0.5)
-                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod + std_ver_mod, facecolor=colour[mod], alpha=0.5)
+                ax.plot((rhd_ver_sat - std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+                ax.plot((rhd_ver_sat + std_ver_sat), height_ver_sat, lw=0, color=colour['sat'])
+                ax.plot((rhd_ver_mod - std_ver_mod), height_ver_mod, lw=0, color=colour[mod])
+                ax.plot((rhd_ver_mod + std_ver_mod), height_ver_mod, lw=0, color=colour[mod])
+                ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] - std_ver_sat[3:], facecolor=colour['sat'], alpha=alp)
+                ax.fill_betweenx(height_ver_sat[3:], rhd_ver_sat[3:], rhd_ver_sat[3:] + std_ver_sat[3:], facecolor=colour['sat'], alpha=alp)
+                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod - std_ver_mod, facecolor=colour[mod], alpha=alp)
+                ax.fill_betweenx(height_ver_mod, rhd_ver_mod, rhd_ver_mod + std_ver_mod, facecolor=colour[mod], alpha=alp)
                 
                 if f in [2, 5, 8, 11]:
                     ax.legend(loc=1,prop={'size': 14})
@@ -2721,7 +2721,7 @@ if __name__ == '__main__':
         rad_read = 4
     else:
         rad_read = rad
-    if (rad == 4):# and (options.Month == 1):
+    if (rad == 4) and (options.Month == -100):# and (options.Month == 1):
         utanP = True
     else:
         utanP = False
@@ -2984,6 +2984,7 @@ if __name__ == '__main__':
         if utanP:
             all_res.update({'%s_sat_up' %season: sat_res_up})
         all_res.update({'e_%s_sat' %season: e_sat_res, 'e_%s_hre' %season: e_hre_res, 'e_%s_lre' %season: e_lre_res, 'e_%s_lr6' %season: e_lr6_res})
+
     if options.Month in [-7]:
         for i in ['sat_up','sat', 'hre', 'lre', 'lr6']:
             if (not utanP) and (i=='sat_up'):
@@ -3101,9 +3102,9 @@ if __name__ == '__main__':
                 figname_vert = figname['hre'].replace('HR%s' %ece_ver, 'All')
                 if options.Month == -8:
                     figname_vert = figname_vert.replace(season, 'enso')
+                    plotVertRHD_Enso(all_res, height, stLat, figname_vert, useClim, use_datline_center)
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'lr6', 'sat', useClim=useClim, use_datline_center=use_datline_center, useSMA=5, extraLon=(lr6_res['lon'], sat_res['lon']))
                     plotLonEnso(all_res, stLat, valminmax, figname, useClim, use_datline_center, useSMA=5)
-                    plotVertRHD_Enso(all_res, height, stLat, figname_vert, useClim, use_datline_center)
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'hre', 'sat', useClim=useClim, use_datline_center=use_datline_center, useSMA=5, extraLon=(hre_res['lon'], sat_res['lon']))
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'hre', 'lre', useClim=useClim, use_datline_center=use_datline_center)
                     plotLonEnso_diff(all_res, stLat, valminmax_diff, figname_diff, 'lr6', 'lre', useClim=useClim, use_datline_center=use_datline_center)
@@ -3145,10 +3146,11 @@ if __name__ == '__main__':
             figname90_cf_1 = figname90_cf.replace('all_s-4', 'all_s-1')
             figname90_cf_3 = figname90_cf.replace('all_s-4', 'all_s-3')
 #             figname90_cf = figname90_cf.replace('/wc90', '/wc90Norm')
-            pdb.set_trace()
             if options.Month == -100:
                 ticksen90['lwc'] = np.array([0, 0.01, 0.02, 0.03])
                 plotWC_CF_All(all_res, height, figname90_cf, ticksen90, useClim, up=utanP)
+                if utanP:
+                    plotWC_CF_All(all_res, height, figname90_cf, ticksen90, useClim, up=False)
             else:
                 plotWC_CF_Season(all_res, height, figname90_cf_1, ticksen90, useClim, months=['djf'], up=utanP)
                 plotWC_CF_Season(all_res, height, figname90_cf_3, ticksen90, useClim, months=['mam', 'jja', 'son'], up=utanP)
@@ -3174,8 +3176,8 @@ if __name__ == '__main__':
 # python plotData.py -m -7 -r 4 # ?
 # python plotData.py -m -100 -r 1 # Fig 5-6
 # python plotData.py -m -100 -r 4 # Fig 7
-# python plotData.py -m -8 -r 4
-# python plotData.py -m -8 -r 1
+# python plotData.py -m -8 -r 1 # Fig 8-11
+# python plotData.py -m -8 -r 4 # Fig 12-13
     
 #: Presentation Defence Fig 1
     
